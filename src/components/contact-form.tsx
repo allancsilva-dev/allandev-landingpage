@@ -9,6 +9,7 @@ export function ContactForm() {
   const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("sending");
@@ -37,22 +38,22 @@ export function ContactForm() {
       if (!response.ok) throw new Error("send failed");
       event.currentTarget.reset();
       setStatus("success");
-      setMessage("Mensagem enviada. Retorno assim que possível.");
+      setMessage("Mensagem enviada. Retorno em até 24 horas.");
     } catch {
       if ("turnstile" in window)
         (
           window as Window & { turnstile?: { reset: () => void } }
         ).turnstile?.reset();
       setStatus("error");
-      setMessage("Não consegui enviar agora. Use o e-mail ao lado.");
     } finally {
       window.clearTimeout(timeout);
     }
   }
+
   return (
     <form className="contact-form" aria-label="Nova mensagem" onSubmit={submit}>
       <fieldset disabled={status === "sending"}>
-        <legend>Nova mensagem</legend>
+        <legend>NOVA MENSAGEM</legend>
         <div className="form-grid">
           <div className="field">
             <label htmlFor="nome">Nome</label>
@@ -98,11 +99,11 @@ export function ContactForm() {
               <option value="" disabled>
                 Selecione
               </option>
-              <option value="site">Site / landing</option>
-              <option value="sistema-web">Sistema web</option>
-              <option value="api">API / backend</option>
-              <option value="mobile">Aplicativo mobile</option>
-              <option value="banco-de-dados">Banco de dados</option>
+              <option value="site">Site / Landing</option>
+              <option value="sistema-web">Sistema Web</option>
+              <option value="api">API / Backend</option>
+              <option value="mobile">Aplicativo Mobile</option>
+              <option value="banco-de-dados">Banco de Dados</option>
               <option value="infraestrutura">Infraestrutura</option>
               <option value="consultoria">Consultoria</option>
               <option value="outro">Outro</option>
@@ -150,18 +151,44 @@ export function ContactForm() {
             />
           </>
         )}
-        <button className="button button-primary" type="submit">
-          {status === "sending" ? "Enviando…" : "Enviar mensagem"}
-        </button>
+        {status !== "success" && (
+          <button className="button button-primary" type="submit">
+            {status === "sending" ? "ENVIANDO..." : "ENVIAR MENSAGEM"}
+          </button>
+        )}
       </fieldset>
-      {message && (
-        <p
-          className={`form-message ${status}`}
-          role="status"
-          aria-live="polite"
-        >
-          {message}
-        </p>
+
+      {status === "success" && (
+        <div className="form-message success" role="status" aria-live="polite">
+          <p>
+            <strong>MENSAGEM ENVIADA</strong>
+          </p>
+          <p>{message}</p>
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={() => setStatus("idle")}
+          >
+            ENVIAR OUTRA MENSAGEM
+          </button>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div className="form-message error" role="alert">
+          <p>
+            Não consegui enviar agora. Me chama direto no{" "}
+            <a
+              href="https://wa.me/SEUNUMERO"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp
+            </a>{" "}
+            ou em{" "}
+            <a href="mailto:allan@nexostech.com.br">allan@nexostech.com.br</a>.
+          </p>
+        </div>
       )}
     </form>
   );

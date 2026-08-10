@@ -4,6 +4,7 @@ import "@fontsource/onest/600.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/silkscreen/400.css";
 import "./globals.css";
+import { AppShell } from "@/components/app-shell";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000";
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s — AllanDev",
   },
   description:
-    "Infraestrutura, sistemas web, mobile e integrações construídos com critério de produção.",
+    "Infraestrutura, sistemas web, mobile e integrações construídos com critério de produção. Da infraestrutura à interface — com código limpo e entrega que não quebra na segunda semana.",
   applicationName: "AllanDev",
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
@@ -39,7 +40,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body>
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }

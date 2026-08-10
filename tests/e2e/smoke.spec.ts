@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("home carrega e aponta contato", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Código que chega inteiro",
+    "SISTEMAS QUE AGUENTAM",
   );
   await expect(page.getByRole("form")).toBeVisible();
 });

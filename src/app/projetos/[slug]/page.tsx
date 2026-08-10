@@ -9,19 +9,43 @@ import {
 } from "@/lib/content/projects";
 
 type Props = { params: Promise<{ slug: string }> };
+
 export const dynamicParams = false;
+
 export async function generateStaticParams() {
   return (await listPublishedProjects()).map(({ slug }) => ({ slug }));
 }
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const item = await getPublishedProject((await params).slug);
-  return item
-    ? { title: item.project.titulo, description: item.project.resumo }
-    : {};
+  if (!item) return {};
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000";
+  return {
+    title: item.project.titulo,
+    description: item.project.resumo,
+    openGraph: {
+      title: item.project.titulo,
+      description: item.project.resumo,
+      url: `${base}/projetos/${item.project.slug}`,
+      type: "article",
+      ...(item.project.ogImage
+        ? {
+            images: [{ url: item.project.ogImage, alt: item.project.capa.alt }],
+          }
+        : {}),
+    },
+  };
 }
+
 export default async function ProjectPage({ params }: Props) {
+  const all = await listPublishedProjects();
   const item = await getPublishedProject((await params).slug);
   if (!item) notFound();
+
+  const idx = all.findIndex((p) => p.slug === item.project.slug);
+  const prev = idx > 0 ? all[idx - 1] : null;
+  const next = idx < all.length - 1 ? all[idx + 1] : null;
+
   const { content } = await compileMDX({
     source: item.source,
     options: { mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [] } },
@@ -35,12 +59,72 @@ export default async function ProjectPage({ params }: Props) {
       ),
     },
   });
+
   return (
-    <main className="legal-page">
-      <Link href="/projetos">← Projetos</Link>
-      <h1>{item.project.titulo}</h1>
-      <p>{item.project.resumo}</p>
-      <article>{content}</article>
+    <main className="project-page">
+      <div className="project-header">
+        <Link className="project-breadcrumb" href="/projetos">
+          ← PROJETOS
+        </Link>
+        <h1>{item.project.titulo}</h1>
+        <p className="section-lede">{item.project.resumo}</p>
+        <div className="project-hud">
+          <span className="project-hud-tag">
+            <strong>Papel:</strong> {item.project.papel}
+          </span>
+          <span className="project-hud-tag">
+            <strong>Período:</strong> {item.project.periodo.inicio}
+            {item.project.periodo.fim
+              ? ` — ${item.project.periodo.fim}`
+              : " — presente"}
+          </span>
+          <span className="project-hud-tag">
+            <strong>Status:</strong>{" "}
+            {item.project.periodo.fim ? "CONCLUÍDO" : "EM ANDAMENTO"}
+          </span>
+          {item.project.cliente && (
+            <span className="project-hud-tag">
+              <strong>Cliente:</strong> {item.project.cliente}
+            </span>
+          )}
+        </div>
+        <div className="project-hud">
+          {item.project.stack.map((tech) => (
+            <span key={tech} className="project-hud-tag">
+              {tech}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="project-body">
+        <aside className="project-toc" aria-label="Nesta página">
+          <p className="project-toc-label">SUMÁRIO</p>
+          <nav>
+            <a href="#visao-geral">Visão geral</a>
+          </nav>
+        </aside>
+        <article className="project-article">{content}</article>
+      </div>
+
+      {(prev || next) && (
+        <nav className="project-nav" aria-label="Navegação entre projetos">
+          {prev ? (
+            <Link className="project-nav-prev" href={`/projetos/${prev.slug}`}>
+              ← {prev.titulo}
+            </Link>
+          ) : (
+            <span />
+          )}
+          {next ? (
+            <Link className="project-nav-next" href={`/projetos/${next.slug}`}>
+              {next.titulo} →
+            </Link>
+          ) : (
+            <span />
+          )}
+        </nav>
+      )}
     </main>
   );
 }

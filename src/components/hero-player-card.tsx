@@ -72,15 +72,23 @@ export function HeroPlayerCard() {
             <div className="hero-boot" role="status" aria-live="polite">
               <span>Allan.Dev OS</span>
               <strong>CARREGANDO PERFIL...</strong>
-              <button type="button" onClick={skipBoot}>PULAR</button>
+              <button type="button" onClick={skipBoot}>
+                PULAR
+              </button>
             </div>
           )}
         </div>
         <strong>ALLAN CARVALHO</strong>
         <p>Full Stack Developer · Infraestrutura</p>
         <dl>
-          <div><dt>FULL</dt><dd>Da infra à interface</dd></div>
-          <div><dt>24H</dt><dd>Retorno inicial</dd></div>
+          <div>
+            <dt>FULL</dt>
+            <dd>Da infra à interface</dd>
+          </div>
+          <div>
+            <dt>24H</dt>
+            <dd>Retorno inicial</dd>
+          </div>
         </dl>
       </m.div>
     </LazyMotion>

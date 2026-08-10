@@ -10,6 +10,13 @@ export const projectFrontmatterSchema = z.object({
   resumo: z.string().min(50).max(160),
   status: z.enum(["draft", "published", "archived"]),
   destaque: z.number().int().positive().nullable().optional(),
+  homeTeaser: z
+    .object({
+      order: z.number().int().positive(),
+      label: z.string().min(3).max(40),
+      visualVariant: z.enum(["nexos", "renowa"]),
+    })
+    .optional(),
   periodo: z.object({
     inicio: z.string().regex(yearMonth),
     fim: z.string().regex(yearMonth).nullable(),

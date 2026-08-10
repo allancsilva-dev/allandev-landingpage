@@ -41,6 +41,14 @@ export async function listPublishedProjects() {
     .sort((a, b) => (a.destaque ?? 999) - (b.destaque ?? 999));
 }
 
+export async function listHomeProjectTeasers() {
+  return (await listAllProjects())
+    .filter((project) => project.homeTeaser != null)
+    .sort(
+      (a, b) => (a.homeTeaser?.order ?? 999) - (b.homeTeaser?.order ?? 999),
+    );
+}
+
 export async function getPublishedProject(slug: string) {
   if (!slugPattern.test(slug)) return null;
   const project = (await listAllProjects()).find(

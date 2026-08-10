@@ -2,8 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource/onest/400.css";
 import "@fontsource/onest/600.css";
 import "@fontsource/jetbrains-mono/400.css";
-import "@fontsource/silkscreen/400.css";
+import "@fontsource/press-start-2p/400.css";
 import "./globals.css";
+import "./arcade.css";
 import { AppShell } from "@/components/app-shell";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000";

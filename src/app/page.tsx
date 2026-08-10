@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   Accordion as AccordionRoot,
@@ -6,8 +7,8 @@ import {
   AccordionTrigger,
 } from "@radix-ui/react-accordion";
 import {
+  ArrowDown,
   ArrowUpRight,
-  Braces,
   Database,
   GitBranch,
   Monitor,
@@ -16,9 +17,11 @@ import {
   Smartphone,
 } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
-import { HomeStage } from "@/components/home-stage";
+import {
+  ProjectSelect,
+  type ProjectMission,
+} from "@/components/project-select";
 import { Marquee } from "@/components/ui/marquee";
-import { Terminal } from "@/components/ui/terminal";
 import { listHomeProjectTeasers } from "@/lib/content/projects";
 import { homeContent } from "@/lib/home-content";
 
@@ -44,6 +47,15 @@ export default async function Home() {
     contato,
     footer,
   } = homeContent;
+  const missions: ProjectMission[] = projectTeasers.map((project) => ({
+    slug: project.slug,
+    title: project.titulo,
+    summary: project.resumo,
+    label: project.homeTeaser?.label ?? "Case em preparação",
+    role: project.papel,
+    stack: project.stack,
+    variant: project.homeTeaser?.visualVariant ?? "nexos",
+  }));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -75,7 +87,7 @@ export default async function Home() {
   };
 
   return (
-    <main className="home-page">
+    <main className="arcade-home home-page" id="conteudo">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -84,123 +96,97 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
+      <span className="arcade-scanlines" aria-hidden="true" />
 
-      <section className="home-hero" id="topo" aria-labelledby="hero-title">
-        <div className="home-cockpit-frame" aria-hidden="true" />
-        <aside className="home-command-rail" aria-label="Status profissional">
-          <div className="rail-identity">
-            <span className="rail-mark" aria-hidden="true">
-              A
-            </span>
-            <div>
-              <strong>ALLAN CARVALHO</strong>
-              <span>INFRA &amp; FULL STACK</span>
-            </div>
-          </div>
-          <div className="rail-status">
-            <span className="status-light" aria-hidden="true" />
-            <div>
-              <strong>{hero.badge}</strong>
-              <span>RETORNO EM ATÉ 24H</span>
-            </div>
-          </div>
-        </aside>
-
-        <div className="home-hero-copy">
-          <p className="hero-system-label">
-            <Braces size={17} aria-hidden="true" /> MISSÃO / 01
+      <section className="arcade-hero" id="topo" aria-labelledby="hero-title">
+        <div className="arcade-hero-copy">
+          <p className="arcade-hero-badge">
+            <i aria-hidden="true" /> {hero.badge}
           </p>
           <h1 id="hero-title">{hero.title}</h1>
-          <p className="hero-lede">{hero.lede}</p>
-          <div className="hero-actions">
-            <a className="button button-primary" href={hero.ctaPrimary.href}>
-              {hero.ctaPrimary.label}{" "}
+          <p className="arcade-hero-lede">{hero.lede}</p>
+          <div className="arcade-actions">
+            <a
+              className="arcade-button arcade-button-primary"
+              href={hero.ctaPrimary.href}
+            >
+              {hero.ctaPrimary.label}
               <ArrowUpRight size={17} aria-hidden="true" />
             </a>
             <a
-              className="button button-secondary"
+              className="arcade-button arcade-button-secondary"
               href={hero.ctaSecondary.href}
             >
               {hero.ctaSecondary.label}
+              <ArrowDown size={17} aria-hidden="true" />
             </a>
           </div>
         </div>
 
-        <HomeStage />
+        <aside
+          className="arcade-player-card"
+          aria-label="Allan Carvalho e credencial Nexos Tech"
+        >
+          <div className="arcade-player-art">
+            <Image
+              src="/images/nexos-tech-logo.png"
+              width={1024}
+              height={1024}
+              sizes="(max-width: 767px) 42vw, 220px"
+              priority
+              alt="Logo Nexos Tech, empresa fundada por Allan Carvalho"
+            />
+          </div>
+          <strong>ALLAN CARVALHO</strong>
+          <p>Full Stack Developer · Infraestrutura · Nexos Tech</p>
+          <dl>
+            <div>
+              <dt>FULL</dt>
+              <dd>DA INFRA À INTERFACE</dd>
+            </div>
+            <div>
+              <dt>24H</dt>
+              <dd>RETORNO INICIAL</dd>
+            </div>
+          </dl>
+        </aside>
       </section>
 
-      <div className="home-marquee-wrap">
-        <Marquee items={marquee.top} direction="left" speed={44} />
-        <span className="marquee-status" aria-hidden="true">
-          SYSTEM ONLINE
-        </span>
+      <div className="arcade-marquee-wrap">
+        <Marquee items={marquee.top} direction="left" speed={42} />
       </div>
 
       <section
-        className="home-projects"
+        className="arcade-section arcade-projects"
         id="projetos"
         aria-labelledby="projetos-title"
       >
-        <div className="projects-intro">
-          <p>PROJETOS EM DESTAQUE</p>
-          <h2 id="projetos-title">{projetos.title}</h2>
-          <span>{projetos.lede}</span>
+        <div className="arcade-section-head">
+          <p>FASE 02 / PORTFÓLIO</p>
+          <h2 id="projetos-title">SELECIONE UMA MISSÃO</h2>
+          <span>{projetos.emptyText}</span>
         </div>
-        <div className="project-teaser-grid">
-          {projectTeasers.map((project) => {
-            const content = (
-              <>
-                <span className="project-art" aria-hidden="true">
-                  <span />
-                </span>
-                <span className="project-status">
-                  {project.homeTeaser?.label}
-                </span>
-                <strong>{project.titulo}</strong>
-                <p>{project.resumo}</p>
-                <span className="project-meta">
-                  <span>{project.papel}</span>
-                  <span>{project.stack.slice(0, 4).join(" · ")}</span>
-                </span>
-                <span className="project-action">
-                  {project.status === "published"
-                    ? "VER CASE"
-                    : "PEDIR APRESENTAÇÃO"}
-                  <ArrowUpRight size={16} aria-hidden="true" />
-                </span>
-              </>
-            );
-
-            return project.status === "published" ? (
-              <Link
-                className={`project-teaser project-${project.homeTeaser?.visualVariant}`}
-                href={`/projetos/${project.slug}`}
-                key={project.slug}
-              >
-                {content}
-              </Link>
-            ) : (
-              <a
-                className={`project-teaser project-${project.homeTeaser?.visualVariant}`}
-                href="#contato"
-                key={project.slug}
-                aria-label={`Pedir apresentação do projeto ${project.titulo}`}
-              >
-                {content}
-              </a>
-            );
-          })}
-        </div>
+        <ProjectSelect projects={missions} />
       </section>
 
-      <section className="home-about" id="sobre" aria-labelledby="sobre-title">
-        <div className="about-copy">
+      <section
+        className="arcade-section arcade-about"
+        id="sobre"
+        aria-labelledby="sobre-title"
+      >
+        <div className="arcade-character-title">
+          <p>PLAYER PROFILE</p>
           <h2 id="sobre-title">{sobre.title}</h2>
-          <p>
-            O mesmo profissional que desenha interface também pensa em deploy,
-            observabilidade, banco e operação. Menos repasse. Mais contexto.
-          </p>
-          <dl className="about-principles">
+        </div>
+        <div className="arcade-character-sheet">
+          <div className="arcade-avatar" aria-hidden="true">
+            <span>A</span>
+          </div>
+          <div className="arcade-bio">
+            <p>{sobre.body}</p>
+            <strong>{sobre.highlight}</strong>
+          </div>
+          <dl className="arcade-stats">
             <div>
               <dt>VISÃO</dt>
               <dd>Da rede à experiência final</dd>
@@ -209,29 +195,28 @@ export default async function Home() {
               <dt>CRITÉRIO</dt>
               <dd>Arquitetura pronta para operar</dd>
             </div>
+            <div>
+              <dt>FOCO</dt>
+              <dd>Performance, resiliência e manutenção</dd>
+            </div>
           </dl>
         </div>
-        <Terminal abaLable={sobre.abaLable} prompt={sobre.prompt}>
-          <p>{sobre.body}</p>
-          <p className="terminal-highlight">{sobre.highlight}</p>
-        </Terminal>
       </section>
 
       <section
-        className="home-process"
+        className="arcade-section arcade-process"
         id="processo"
         aria-labelledby="processo-title"
       >
-        <div className="process-heading">
-          <span>BRIEFING → PRODUÇÃO</span>
+        <div className="arcade-section-head">
+          <p>FASE 03 / CO-OP</p>
           <h2 id="processo-title">{processo.title}</h2>
+          <span>Três fases. Visibilidade do primeiro briefing ao deploy.</span>
         </div>
-        <ol className="process-timeline">
+        <ol className="arcade-levels">
           {processo.steps.map((step, index) => (
             <li key={step.title}>
-              <span className="process-number" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </span>
+              <span>LVL {String(index + 1).padStart(2, "0")}</span>
               <div>
                 <h3>{step.title}</h3>
                 <p>{step.description}</p>
@@ -242,38 +227,44 @@ export default async function Home() {
       </section>
 
       <section
-        className="home-services"
+        className="arcade-section arcade-services"
         id="servicos"
         aria-labelledby="servicos-title"
       >
-        <div className="services-heading">
+        <div className="arcade-services-intro">
+          <p>LOADOUT / CAPACIDADES</p>
           <h2 id="servicos-title">{servicos.title}</h2>
-          <p>
-            Construção, modernização e operação no mesmo contexto técnico. Entre
-            pelo problema; stack vem depois.
-          </p>
+          <span>
+            Entre pelo problema. Stack vem depois. Cada opção inclui construção,
+            entrega e contexto de operação.
+          </span>
         </div>
-        <ul className="services-list">
+        <ul className="arcade-service-menu">
           {servicos.items.map((item, index) => {
             const Icon = iconMap[item.icon];
             return (
               <li key={item.title}>
-                <span className="service-index">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <Icon aria-hidden="true" size={24} strokeWidth={1.6} />
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <Icon size={22} strokeWidth={1.7} aria-hidden="true" />
+                <div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </div>
               </li>
             );
           })}
         </ul>
       </section>
 
-      <section className="home-faq" id="faq" aria-labelledby="faq-title">
-        <div className="faq-heading">
+      <section
+        className="arcade-section arcade-faq"
+        id="faq"
+        aria-labelledby="faq-title"
+      >
+        <div className="arcade-faq-intro">
+          <p>HELP / PERGUNTAS FREQUENTES</p>
           <h2 id="faq-title">{faq.title}</h2>
-          <p>Respostas diretas antes de abrir canal.</p>
+          <span>Respostas diretas antes de abrir canal.</span>
         </div>
         <AccordionRoot type="single" collapsible defaultValue={faq.items[0].q}>
           {faq.items.map((item) => (
@@ -291,13 +282,12 @@ export default async function Home() {
       </section>
 
       <section
-        className="home-contact"
+        className="arcade-section arcade-contact"
         id="contato"
         aria-labelledby="contato-title"
       >
-        <div className="contact-orbit" aria-hidden="true" />
-        <div className="contato-intro">
-          <p>ABRIR NOVA MISSÃO</p>
+        <div className="arcade-contact-copy">
+          <p>NOVA MISSÃO / CONTATO</p>
           <h2 id="contato-title">{contato.title}</h2>
           <span>{contato.lede}</span>
           <a href={`mailto:${contato.email}`}>{contato.email} ↗</a>
@@ -305,11 +295,11 @@ export default async function Home() {
         <ContactForm />
       </section>
 
-      <footer className="home-footer">
+      <footer className="arcade-footer">
         <strong>ALLANDEV</strong>
         <span>© {new Date().getFullYear()} Allan Carvalho</span>
         <span>{footer.tagline}</span>
-        <Link href="/privacidade">Privacidade</Link>
+        <Link href="/privacidade">PRIVACIDADE</Link>
       </footer>
     </main>
   );

@@ -335,8 +335,13 @@ main {
 
 h1,
 h2,
-h3 {
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
   line-height: 1.05;
   text-wrap: balance;
 }
@@ -345,7 +350,7 @@ h1 {
   max-width: 12ch;
   margin-top: 1.25rem;
   font-size: clamp(3rem, 7vw, 5.8rem);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
 }
 
 .hero-lede {

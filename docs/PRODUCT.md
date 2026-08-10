@@ -1,4 +1,4 @@
-# Produto — AllanDev
+# Produto — Allan.Dev
 
 ## Register
 
@@ -31,11 +31,11 @@ Sucesso significa:
 
 ## Relacao com Nexos Tech
 
-Allan/ALLANDEV e marca principal. Nexos Tech aparece como empresa fundada ou representada por Allan, como contexto do Nexos ERP e como origem da paleta cromatica. Logo Nexos Tech pode ser a imagem principal do hero como credencial visual fundada por Allan, desde que ALLANDEV e Allan Carvalho permaneçam como assinatura textual dominante. Nao substitui navegacao, favicon ou metadados pessoais.
+Allan/Allan.Dev é a marca principal. Nexos Tech aparece como empresa fundada ou representada por Allan, como contexto do Nexos ERP e como origem da paleta cromática. Allan.Dev e Allan Carvalho permanecem como assinatura textual dominante.
 
 ## Referencias e anti-referencias
 
-- Muniz: referencia de linguagem arcade, scanlines, terminal, som opcional e perspectiva 3D. Nao copiar composicao, ordem integral, texto, assets ou identidade.
+- Muniz: referência estrutural da home — container, ordem, ritmo, proporções do hero, grade de projetos, menu e motion. Replicar essa anatomia com alta fidelidade, usando exclusivamente conteúdo, marca, cores e assets AllanDev. Não copiar textos, marca, personagens ou assets Muniz.
 - Logo Nexos Tech em `docs/ChatGPT Image 7 de mar. de 2026, 20_06_40.png`: fonte oficial de azul, ciano, violeta e magenta.
 - Evitar portfolio corporativo que pareca ser da Nexos Tech.
 - Evitar template SaaS generico, glassmorphism decorativo, gradient text, grades interminaveis de cards e efeitos que escondam conteudo.

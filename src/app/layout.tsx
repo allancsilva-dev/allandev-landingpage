@@ -13,11 +13,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: "Allan Carvalho — Infraestrutura e Full-stack",
-    template: "%s — AllanDev",
+    template: "%s — Allan.Dev",
   },
   description:
     "Infraestrutura, sistemas web, mobile e integrações construídos com critério de produção. Da infraestrutura à interface — com código limpo e entrega que não quebra na segunda semana.",
-  applicationName: "AllanDev",
+  applicationName: "Allan.Dev",
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   icons: {
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     description:
       "Projetos reais, decisões técnicas e entregas prontas para produção.",
     url: "/",
-    siteName: "AllanDev",
+    siteName: "Allan.Dev",
   },
 };
 

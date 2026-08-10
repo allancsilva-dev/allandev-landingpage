@@ -34,7 +34,7 @@ const contrastPairs = [
 export default function DesignSystemPage() {
   return (
     <main className="ds-page">
-      <h1>Design System — AllanDev</h1>
+      <h1>Design System — Allan.Dev</h1>
 
       <div className="ds-group">
         <h2>Paleta</h2>

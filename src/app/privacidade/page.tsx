@@ -3,7 +3,7 @@ export const metadata = { title: "Privacidade" };
 export default function PrivacyPage() {
   return (
     <main className="legal-page">
-      <Link href="/">← AllanDev</Link>
+      <Link href="/">← Allan.Dev</Link>
       <h1>Política de privacidade</h1>
       <p>Última atualização: 10 de agosto de 2026.</p>
       <h2>Dados e finalidade</h2>

@@ -38,7 +38,7 @@ export default async function Image({
             color: "oklch(0.78 0.16 180)",
           }}
         >
-          ALLANDEV
+          Allan.Dev
         </span>
         <span
           style={{

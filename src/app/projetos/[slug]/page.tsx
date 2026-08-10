@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: item.project.titulo,
     description: item.project.resumo,
     openGraph: {
-      title: `${item.project.titulo} — AllanDev`,
+      title: `${item.project.titulo} — Allan.Dev`,
       description: item.project.resumo,
       url: `${base}/projetos/${item.project.slug}`,
       type: "article",

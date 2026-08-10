@@ -52,7 +52,7 @@ export async function validateTurnstile(token: string, remoteIp: string) {
 
 function textBody(data: ContactInput) {
   return [
-    `Novo contato AllanDev`,
+    `Novo contato Allan.Dev`,
     `Nome: ${data.nome}`,
     `E-mail: ${data.email}`,
     `Empresa: ${data.empresa || "Não informada"}`,
@@ -81,7 +81,7 @@ export async function sendContactEmail(data: ContactInput) {
       from,
       to: [to],
       reply_to: data.email,
-      subject: `Contato AllanDev — ${data.tipoProjeto}`,
+      subject: `Contato Allan.Dev — ${data.tipoProjeto}`,
       text: textBody(data),
     }),
     signal: timeoutSignal(8_000),

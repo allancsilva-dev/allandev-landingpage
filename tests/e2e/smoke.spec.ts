@@ -2,8 +2,8 @@ import { expect, test } from "@playwright/test";
 
 async function startHome(page: import("@playwright/test").Page) {
   await page.goto("/");
-  const start = page.getByRole("button", { name: "PRESS START" });
-  if (await start.isVisible()) await start.click();
+  const skip = page.getByRole("button", { name: "PULAR" });
+  if (await skip.isVisible()) await skip.click();
 }
 
 test("home carrega com H1, form e navegação", async ({ page }) => {
@@ -27,10 +27,9 @@ test("home tem seções completas", async ({ page }) => {
 test("home exibe teasers privados sem publicar os cases", async ({ page }) => {
   await startHome(page);
   await expect(page.getByText("Nexos ERP", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: /02 RENOWA/i })).toBeVisible();
-  await expect(page.getByText("PEDIR APRESENTAÇÃO")).toHaveCount(1);
-  await page.getByRole("button", { name: /02 RENOWA/i }).click();
   await expect(page.getByRole("heading", { name: "Renowa" })).toBeVisible();
+  await expect(page.getByText("PEDIR APRESENTAÇÃO")).toHaveCount(2);
+  await expect(page.locator(".arcade-project-select")).toHaveCount(0);
 
   await page.goto("/projetos/nexos-erp");
   await expect(page.getByText("ERRO 404")).toBeVisible();
@@ -55,7 +54,9 @@ test("faq accordion alterna itens", async ({ page }) => {
   await expect(page.getByText(/São faixas honestas/)).toBeVisible();
 });
 
-test("menu mobile abre e fecha", async ({ page }) => {
+test("menu abre com nova anatomia e restaura o foco ao fechar", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 480, height: 800 });
   await startHome(page);
   const menuBtn = page.getByRole("button", { name: /MENU/ });
@@ -63,8 +64,51 @@ test("menu mobile abre e fecha", async ({ page }) => {
   await menuBtn.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: /FECHAR/ }).click();
+  await expect(dialog.getByRole("navigation").getByRole("link")).toHaveText([
+    "Projetos",
+    "Sobre",
+    "Processo",
+    "Serviços",
+    "Contato",
+  ]);
+  await expect(dialog.getByRole("link", { name: /GitHub/ })).toHaveAttribute(
+    "target",
+    "_blank",
+  );
+  await expect(dialog).not.toContainText(/PAUSE|MAPA|HOME/);
+  await expect(
+    dialog.getByRole("button", { name: "Fechar menu" }),
+  ).toBeFocused();
+  await expect(page.locator("html")).toHaveCSS("overflow", "hidden");
+  await dialog.getByRole("button", { name: "Fechar menu" }).click();
   await expect(dialog).not.toBeVisible();
+  await expect(menuBtn).toBeFocused();
+});
+
+test("menu fecha com Escape e ao escolher um destino", async ({ page }) => {
+  await startHome(page);
+  const menuBtn = page.getByRole("button", { name: /MENU/ });
+  await menuBtn.click();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(menuBtn).toBeFocused();
+  await menuBtn.click();
+  await page.getByRole("dialog").getByRole("link", { name: "Sobre" }).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(page).toHaveURL(/#sobre$/);
+});
+
+test("menu não cria overflow em viewport de 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await startHome(page);
+  await page.getByRole("button", { name: /MENU/ }).click();
+  const dimensions = await page.evaluate(() => ({
+    document: document.documentElement.scrollWidth,
+    dialog: document.querySelector("dialog")?.scrollWidth,
+    viewport: window.innerWidth,
+  }));
+  expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport + 1);
+  expect(dimensions.dialog).toBeLessThanOrEqual(dimensions.viewport + 1);
 });
 
 test("home não cria overflow horizontal em 320px", async ({ page }) => {
@@ -81,21 +125,21 @@ test("preferência de movimento reduzido mantém entrada estática", async ({
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "PRESS START" })).toBeVisible();
-  await page.getByRole("button", { name: "PRESS START" }).click();
+  await expect(page.getByRole("button", { name: "PULAR" })).toHaveCount(0);
   await expect(page.locator('[aria-label="Ligar som"]')).toHaveAttribute(
     "aria-pressed",
     "false",
   );
 });
 
-test("entrada obrigatória aparece só uma vez por sessão", async ({ page }) => {
+test("boot do hero aparece só uma vez por sessão e pode ser pulado", async ({
+  page,
+}) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "PRESS START" }).click();
+  await expect(page.getByRole("button", { name: "PULAR" })).toBeVisible();
+  await page.getByRole("button", { name: "PULAR" }).click();
   await page.reload();
-  await expect(page.getByRole("button", { name: "PRESS START" })).toHaveCount(
-    0,
-  );
+  await expect(page.getByRole("button", { name: "PULAR" })).toHaveCount(0);
 });
 
 test("rotas públicas e erro", async ({ page }) => {

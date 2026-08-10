@@ -7,10 +7,17 @@ import {
   getPublishedProject,
   listPublishedProjects,
 } from "@/lib/content/projects";
-
-type Props = { params: Promise<{ slug: string }> };
+import {
+  Gallery,
+  VideoPlayer,
+  Callout,
+  Architecture,
+  DecisionsTable,
+  Metrics,
+} from "@/components/mdx";
 
 export const dynamicParams = false;
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
   return (await listPublishedProjects()).map(({ slug }) => ({ slug }));
@@ -24,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: item.project.titulo,
     description: item.project.resumo,
     openGraph: {
-      title: item.project.titulo,
+      title: `${item.project.titulo} — AllanDev`,
       description: item.project.resumo,
       url: `${base}/projetos/${item.project.slug}`,
       type: "article",
@@ -37,10 +44,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function extractHeadings(source: string) {
+  const headings: { id: string; text: string; level: number }[] = [];
+  const lines = source.split("\n");
+  for (const line of lines) {
+    const match = line.match(/^(#{2,3})\s+(.+)$/);
+    if (match) {
+      const level = match[1]!.length;
+      const text = match[2]!.trim();
+      const id = text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      headings.push({ id, text, level });
+    }
+  }
+  return headings;
+}
+
 export default async function ProjectPage({ params }: Props) {
   const all = await listPublishedProjects();
   const item = await getPublishedProject((await params).slug);
   if (!item) notFound();
+
+  const headings = extractHeadings(item.source);
 
   const idx = all.findIndex((p) => p.slug === item.project.slug);
   const prev = idx > 0 ? all[idx - 1] : null;
@@ -57,6 +86,12 @@ export default async function ProjectPage({ params }: Props) {
           {...props}
         />
       ),
+      Gallery,
+      VideoPlayer,
+      Callout,
+      Architecture,
+      DecisionsTable,
+      Metrics,
     },
   });
 
@@ -98,12 +133,22 @@ export default async function ProjectPage({ params }: Props) {
       </div>
 
       <div className="project-body">
-        <aside className="project-toc" aria-label="Nesta página">
-          <p className="project-toc-label">SUMÁRIO</p>
-          <nav>
-            <a href="#visao-geral">Visão geral</a>
-          </nav>
-        </aside>
+        {headings.length > 0 && (
+          <aside className="project-toc" aria-label="Índice da página">
+            <p className="project-toc-label">ÍNDICE</p>
+            <nav>
+              {headings.map((h) => (
+                <a
+                  key={h.id}
+                  href={`#${h.id}`}
+                  style={{ paddingLeft: h.level === 3 ? "1rem" : 0 }}
+                >
+                  {h.text}
+                </a>
+              ))}
+            </nav>
+          </aside>
+        )}
         <article className="project-article">{content}</article>
       </div>
 

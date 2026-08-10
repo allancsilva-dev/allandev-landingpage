@@ -17,8 +17,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:contrast": "node --import tsx scripts/test-contrast.ts",
     "validate:content": "node --import tsx scripts/validate-content.ts",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:contrast && pnpm test && pnpm build"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "5.2.8",
@@ -41,6 +42,7 @@
     "@types/node": "24.10.4",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
+    "culori": "^4.0.2",
     "eslint": "9.39.2",
     "eslint-config-next": "16.3.0",
     "prettier": "3.8.2",

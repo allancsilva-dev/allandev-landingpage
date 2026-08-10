@@ -19,6 +19,14 @@ export const metadata: Metadata = {
   applicationName: "AllanDev",
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
+  icons: {
+    icon: [
+      {
+        url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0f1a'/><text y='.9em' font-size='65' font-family='monospace' font-weight='bold' fill='%2338e0d0' text-anchor='middle' x='50'>A</text></svg>",
+        type: "image/svg+xml",
+      },
+    ],
+  },
   openGraph: {
     type: "website",
     locale: "pt_BR",

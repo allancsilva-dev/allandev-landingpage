@@ -177,15 +177,8 @@ export function ContactForm() {
       {status === "error" && (
         <div className="form-message error" role="alert">
           <p>
-            Não consegui enviar agora. Me chama direto no{" "}
-            <a
-              href="https://wa.me/SEUNUMERO"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              WhatsApp
-            </a>{" "}
-            ou em{" "}
+            Não consegui enviar agora. Seus dados continuam no formulário. Tente
+            novamente ou escreva para{" "}
             <a href="mailto:allan@nexostech.com.br">allan@nexostech.com.br</a>.
           </p>
         </div>

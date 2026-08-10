@@ -20,6 +20,8 @@ services:
     security_opt: ["no-new-privileges:true"]
     tmpfs:
       - /tmp:size=32m,noexec,nosuid,nodev
+    volumes:
+      - allandev-images:/app/.next/cache/images:rw
     mem_limit: 768m
     cpus: 1.0
     pids_limit: 200
@@ -35,3 +37,5 @@ services:
       timeout: 3s
       retries: 3
       start_period: 15s
+volumes:
+  allandev-images:

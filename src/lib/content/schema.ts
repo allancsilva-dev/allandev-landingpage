@@ -3,6 +3,7 @@ import { z } from "zod";
 const yearMonth = /^\d{4}-(0[1-9]|1[0-2])$/;
 const localAsset =
   /^\/(?!\/|.*\.\.)[a-zA-Z0-9/_-]+\.(avif|webp|png|jpg|jpeg|svg)$/;
+const localVideo = /^\/(?!\/|.*\.\.)[a-zA-Z0-9/_-]+\.(mp4|webm)$/;
 
 export const projectFrontmatterSchema = z.object({
   titulo: z.string().min(3).max(60),
@@ -28,6 +29,36 @@ export const projectFrontmatterSchema = z.object({
     })
     .optional(),
   atualizadoEm: z.coerce.date(),
+  galeria: z
+    .array(
+      z.object({
+        src: z.string().regex(localAsset),
+        alt: z.string().min(5).max(180),
+        legenda: z.string().max(200).optional(),
+      }),
+    )
+    .max(12)
+    .optional(),
+  videos: z
+    .array(
+      z.object({
+        src: z.string().regex(localVideo),
+        poster: z.string().regex(localAsset),
+        titulo: z.string().min(3).max(120),
+      }),
+    )
+    .max(4)
+    .optional(),
+  resultados: z
+    .array(
+      z.object({
+        valor: z.string().min(1).max(30),
+        rotulo: z.string().min(2).max(80),
+        contexto: z.string().min(10).max(200),
+      }),
+    )
+    .max(8)
+    .optional(),
   codeShots: z
     .array(z.string().regex(/^[a-z0-9-]+$/))
     .max(3)

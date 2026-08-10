@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { compileMDX } from "next-mdx-remote/rsc";
@@ -103,6 +104,17 @@ export default async function ProjectPage({ params }: Props) {
         </Link>
         <h1>{item.project.titulo}</h1>
         <p className="section-lede">{item.project.resumo}</p>
+        <div style={{ margin: "1.5rem 0" }}>
+          <Image
+            src={item.project.capa.src}
+            alt={item.project.capa.alt}
+            width={1180}
+            height={600}
+            sizes="(max-width: 800px) 100vw, 1180px"
+            priority
+            style={{ borderRadius: "10px", width: "100%", height: "auto" }}
+          />
+        </div>
         <div className="project-hud">
           <span className="project-hud-tag">
             <strong>Papel:</strong> {item.project.papel}

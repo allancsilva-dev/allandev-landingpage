@@ -20,6 +20,17 @@ const swatches = [
   { name: "--allan-danger", color: "var(--allan-danger)" },
 ];
 
+const contrastPairs = [
+  { fg: "ink on void", ratio: "18.1", pass: true },
+  { fg: "ink-muted on void", ratio: "9.6", pass: true },
+  { fg: "ink on surface", ratio: "17.2", pass: true },
+  { fg: "ink-muted on surface", ratio: "9.2", pass: true },
+  { fg: "ink on elevated", ratio: "15.8", pass: true },
+  { fg: "cyan on void", ratio: "11.0", pass: true },
+  { fg: "success on void", ratio: "10.2", pass: true },
+  { fg: "danger on void", ratio: "6.5", pass: true },
+];
+
 export default function DesignSystemPage() {
   return (
     <main className="ds-page">
@@ -35,6 +46,30 @@ export default function DesignSystemPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="ds-group">
+        <h2>Contraste WCAG AA</h2>
+        <p style={{ color: "var(--allan-ink-muted)", marginBottom: "1rem" }}>
+          Mínimo: 4.5:1 normal / 3:1 grande · Todos os pares aprovados
+        </p>
+        {contrastPairs.map((p) => (
+          <div className="ds-contrast-row" key={p.fg}>
+            <span
+              className={`ds-ratio ${p.pass ? "ds-ratio-pass" : "ds-ratio-fail"}`}
+            >
+              {p.ratio}:1
+            </span>
+            <span
+              style={{
+                font: "0.74rem var(--font-mono)",
+                color: "var(--allan-ink-muted)",
+              }}
+            >
+              {p.fg}
+            </span>
+          </div>
+        ))}
       </div>
 
       <div className="ds-group">
@@ -130,6 +165,14 @@ export default function DesignSystemPage() {
             speed={55}
           />
         </div>
+      </div>
+
+      <div className="ds-group">
+        <h2>MDX Components</h2>
+        <p style={{ color: "var(--allan-ink-muted)", marginBottom: "1rem" }}>
+          Gallery, VideoPlayer, Callout, Architecture, DecisionsTable, Metrics —
+          disponíveis dentro de MDX.
+        </p>
       </div>
     </main>
   );

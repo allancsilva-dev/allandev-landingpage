@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+case "${1:-}" in ghcr.io/allancsilva-dev/allandev-landingpage:* ) image="$1" ;; * ) echo "Imagem rejeitada" >&2; exit 64 ;; esac
+cd /opt/allandev
+container_id="$(docker compose -f infra/compose.yml ps -q site)"
+previous="$(docker inspect -f '{{.Config.Image}}' "$container_id")"
+export ALLANDEV_IMAGE="$image"
+docker compose -f infra/compose.yml pull site
+if ! docker compose -f infra/compose.yml up -d --wait site; then
+  export ALLANDEV_IMAGE="$previous"
+  docker compose -f infra/compose.yml up -d --wait site
+  exit 1
+fi

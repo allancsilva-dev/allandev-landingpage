@@ -1,0 +1,37 @@
+services:
+  site:
+    image: ${ALLANDEV_IMAGE:-allandev-site:local}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    read_only: true
+    ports:
+      - "127.0.0.1:4000:4000"
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      PORT: "4000"
+      HOSTNAME: "0.0.0.0"
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid,nodev
+    mem_limit: 768m
+    cpus: 1.0
+    pids_limit: 200
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 3s
+      retries: 3
+      start_period: 15s

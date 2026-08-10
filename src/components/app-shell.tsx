@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -11,21 +10,12 @@ import {
 } from "react";
 
 const navItems = [
-  { label: "PROJETOS", href: "/#projetos", code: "02" },
-  { label: "SOBRE", href: "/#sobre", code: "03" },
-  { label: "PROCESSO", href: "/#processo", code: "04" },
-  { label: "SERVIÇOS", href: "/#servicos", code: "05" },
-  { label: "CONTATO", href: "/#contato", code: "06" },
+  { label: "Projetos", href: "/#projetos" },
+  { label: "Sobre", href: "/#sobre" },
+  { label: "Processo", href: "/#processo" },
+  { label: "Serviços", href: "/#servicos" },
+  { label: "Contato", href: "/#contato" },
 ] as const;
-
-function getStored(key: string, expected: string) {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.sessionStorage.getItem(key) === expected;
-  } catch {
-    return false;
-  }
-}
 
 function getSoundOn() {
   if (typeof window === "undefined") return false;
@@ -37,13 +27,12 @@ function getSoundOn() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
-  const [gateVisible, setGateVisible] = useState(pathname === "/");
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeTimerRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const playTone = useCallback((frequency = 520, duration = 0.055) => {
@@ -63,15 +52,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     oscillator.start();
     oscillator.stop(context.currentTime + duration);
   }, []);
-
-  useEffect(() => {
-    const timer = window.setTimeout(
-      () =>
-        setGateVisible(pathname === "/" && !getStored("allandev-started", "1")),
-      0,
-    );
-    return () => window.clearTimeout(timer);
-  }, [pathname]);
 
   useEffect(() => {
     if (getSoundOn()) {
@@ -101,18 +81,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("click", onClick);
   }, [playTone, soundOn]);
 
-  const start = useCallback(() => {
-    try {
-      window.sessionStorage.setItem("allandev-started", "1");
-    } catch {
-      // Session storage can be blocked; the current visit still starts.
-    }
-    setGateVisible(false);
-    window.setTimeout(() => {
-      document.querySelector<HTMLElement>(".arcade-button-primary")?.focus();
-    }, 0);
-  }, []);
-
   const toggleSound = useCallback(() => {
     setSoundOn((current) => {
       const next = !current;
@@ -127,53 +95,55 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [playTone]);
 
   const openMenu = useCallback(() => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
     setMenuOpen(true);
     dialogRef.current?.showModal();
   }, []);
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false);
-    dialogRef.current?.close();
+    closeTimerRef.current = window.setTimeout(
+      () => {
+        dialogRef.current?.close();
+        closeTimerRef.current = null;
+      },
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 130,
+    );
   }, []);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     const syncClose = () => setMenuOpen(false);
+    const animateCancel = (event: Event) => {
+      event.preventDefault();
+      closeMenu();
+    };
     dialog.addEventListener("close", syncClose);
-    return () => dialog.removeEventListener("close", syncClose);
-  }, []);
+    dialog.addEventListener("cancel", animateCancel);
+    return () => {
+      dialog.removeEventListener("close", syncClose);
+      dialog.removeEventListener("cancel", animateCancel);
+      if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    };
+  }, [closeMenu]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = previousOverflow;
+    };
+  }, [menuOpen]);
 
   return (
     <>
       <a className="skip-link" href="#main-content">
         Pular para o conteúdo
       </a>
-      <noscript>
-        <style>{`.arcade-start-gate{display:none!important}`}</style>
-      </noscript>
-
-      {gateVisible && (
-        <div
-          className="arcade-start-gate"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="start-title"
-        >
-          <span className="start-gate-grid" aria-hidden="true" />
-          <p>ALLAN CARVALHO / PLAYER 01</p>
-          <h2 id="start-title">ALLANDEV</h2>
-          <span>SISTEMAS · INFRA · OPERAÇÃO</span>
-          <button type="button" onClick={start} autoFocus>
-            PRESS START
-          </button>
-          <small>ENTER OU CLIQUE PARA INICIAR</small>
-        </div>
-      )}
-
       <header
         className={`site-header arcade-site-header ${scrolled ? "header-scrolled" : ""}`}
-        inert={gateVisible}
       >
         <span
           className="scroll-progress"
@@ -183,9 +153,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link
           className="wordmark arcade-wordmark"
           href="/"
-          aria-label="AllanDev — início"
+          aria-label="Allan.Dev — início"
         >
-          <span aria-hidden="true">A</span> ALLANDEV
+          <span aria-hidden="true">A</span> Allan.Dev
         </Link>
         <div className="arcade-header-actions">
           <span className="arcade-player-mini">PLAYER 01</span>
@@ -211,28 +181,52 @@ export function AppShell({ children }: { children: ReactNode }) {
         ref={dialogRef}
         className="mobile-menu-dialog arcade-menu-dialog"
         aria-label="Menu principal"
+        data-closing={!menuOpen ? "true" : undefined}
       >
         <div className="arcade-menu-head">
-          <span>PAUSE / MAPA</span>
-          <button className="close-button" onClick={closeMenu} autoFocus>
-            ✕ FECHAR
+          <Link
+            className="wordmark arcade-wordmark arcade-menu-wordmark"
+            href="/"
+            aria-label="Allan.Dev — início"
+            onClick={closeMenu}
+          >
+            <span aria-hidden="true">A</span> Allan.Dev
+          </Link>
+          <button
+            className="close-button"
+            onClick={closeMenu}
+            aria-label="Fechar menu"
+            autoFocus
+          >
+            <span aria-hidden="true">✕</span>
           </button>
         </div>
         <nav className="mobile-menu-content arcade-menu-content">
-          <Link href="/" onClick={closeMenu}>
-            <span>01</span> HOME
-          </Link>
           {navItems.map((item) => (
             <a key={item.href} href={item.href} onClick={closeMenu}>
-              <span>{item.code}</span> {item.label}
+              {item.label}
             </a>
           ))}
         </nav>
+        <footer className="arcade-menu-footer">
+          <a
+            href="https://github.com/allancsilva-dev"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            GitHub <span aria-hidden="true">↗</span>
+          </a>
+          <p>
+            <span>Disponível para projetos</span>
+            <span>Next.js · TypeScript · Infra</span>
+            <span>
+              <i aria-hidden="true" /> Sistemas operacionais
+            </span>
+          </p>
+        </footer>
       </dialog>
 
-      <div id="main-content" inert={gateVisible}>
-        {children}
-      </div>
+      <div id="main-content">{children}</div>
     </>
   );
 }

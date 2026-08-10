@@ -2,7 +2,7 @@
 
 ## Direcao
 
-Portfolio arcade retro 3D com acabamento tecnico. Fundo cosmico azul profundo, luz eletrica e superficies inspiradas em cockpit de fliperama e circuitos, sem transformar leitura em simulacao de terminal.
+Portfolio arcade retro com acabamento tecnico. Fundo cosmico azul profundo, luz eletrica e interfaces inspiradas em telas de selecao de jogos dos anos 1990, sem transformar leitura em simulacao de terminal. A referencia Muniz orienta energia, tipografia pixel e ritmo de jogo; composicao, paleta e identidade permanecem proprias.
 
 Allan/ALLANDEV domina assinatura. Nexos Tech entra como credencial e origem cromatica.
 
@@ -29,7 +29,7 @@ Gradientes podem iluminar superficies e cenas 3D; gradient text e proibido. Nenh
 
 ## Tipografia
 
-- **Silkscreen:** display curto, logo textual, placares e rotulos arcade.
+- **Press Start 2P:** display curto, logo textual, placares, CTAs e rotulos arcade.
 - **Onest:** corpo, navegacao, formularios e textos longos.
 - **JetBrains Mono:** caminhos, metadados e contexto tecnico.
 
@@ -38,7 +38,7 @@ Titulos usam `text-wrap: balance`, tracking nunca menor que `-0.04em`; corpo fic
 ## Layout
 
 - Conteiner fluido com limites de leitura, espacamento por `clamp()` e ritmo variado.
-- Hero em cockpit assimetrico: rail com mensagem/CTAs e logo Nexos Tech em palco orbital 3D. ALLANDEV e Allan Carvalho permanecem como assinatura principal.
+- Hero assimetrico inspirado em tela de selecao: ALLANDEV domina, proposta e CTAs ficam no eixo principal e logo Nexos Tech aparece em cartucho de credencial secundario.
 - Projetos destacados aparecem cedo, antes de secoes institucionais longas.
 - Cards so quando representam objetos acionaveis: projeto, etapa ou opcao real.
 - Case usa narrativa vertical com midia ampla; sumario sticky somente em desktop.
@@ -46,9 +46,10 @@ Titulos usam `text-wrap: balance`, tracking nunca menor que `-0.04em`; corpo fic
 ## Componentes de assinatura
 
 - logotipo textual ALLANDEV;
-- cena hero em camadas CSS 3D;
+- tela inicial PRESS START obrigatoria apenas na primeira visita da sessao;
+- cena hero em camadas CSS com scanlines, pixel corners e profundidade retangular;
 - moldura de terminal para contexto tecnico, nao para todo conteudo;
-- seletor de projetos inspirado em tela de jogo;
+- seletor de projetos inspirado em missoes/cartuchos, com drafts claramente bloqueados;
 - galeria, video, diagrama de arquitetura, tabela de decisoes e imagem de codigo;
 - marquee de tecnologias como transicao curta;
 - easter eggs discretos e som desligado por padrao.
@@ -61,7 +62,7 @@ Evitar nested cards, glassmorphism padrao, bordas laterais decorativas, cantos a
 - CSS `perspective`/`transform-style: preserve-3d` cria tilt e profundidade; sem Three.js/WebGL na v1.
 - Animar `transform`, `opacity`, `clip-path`, blur e luz; nao animar layout continuamente.
 - Conteudo nasce visivel; animacao apenas melhora apresentacao.
-- Preloader opcional: primeira visita da sessao, maximo 1,2s, sem progresso falso.
+- PRESS START: primeira visita da sessao, sem progresso falso. Conteudo permanece acessivel sem JavaScript; som continua desligado ate escolha explicita.
 - Touch/mobile reduz parallax. `prefers-reduced-motion` troca tudo por corte ou crossfade curto.
 
 ## Responsividade e qualidade

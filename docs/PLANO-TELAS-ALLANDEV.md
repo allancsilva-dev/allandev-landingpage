@@ -579,18 +579,38 @@ Nenhuma cor eletrica vira texto corrido antes do teste WCAG. Gradientes podem il
 
 ---
 
-## Anexo B — Rastreamento por fase
+## Anexo B — Rastreamento por fase (status real em 2026-08-10)
 
-| Fase (plano v2.0) | Telas entregues |
-|---|---|
-| 2 — Shell | S1, S2, S12, S15 (404/500) |
-| 3 — Conteudo | S14 minima e 404 para nao publicados |
-| 4 — Home | S3, S4, S5, S6, S7, S9, S10, S13 |
-| 5 — Template de projeto | S14 completa |
-| 6 — Vitrine de codigo | S8 |
-| 7 — Midia | Video em S7 e S14, galeria em S14 |
-| 8 — Contato | S11, `/privacidade` |
-| 9 — SEO/A11y | JSON-LD da S10, OG de S14, auditoria de todas |
+| Fase (plano v2.0) | Telas | Status |
+|---|---|---|
+| 2 — Shell | S1, S2, S12, S15 (404/500) | ✅ Todas implementadas |
+| 3 — Conteúdo | S14 mínima e 404 para não publicados | ✅ Schema, `generateStaticParams`, draft/archived = 404 |
+| 4 — Home | S3, S4, S5, S6, S7, S9, S10, S13 | ✅ Todas implementadas |
+| 5 — Template de projeto | S14 completa | ✅ HUD, TOC, MDX components, OG image, prev/next |
+| 6 — Vitrine de código | S8 | ❌ Bloqueado (token GitHub) |
+| 7 — Mídia | Vídeo em S7 e S14, galeria em S14 | 🟡 Schema e script encoder prontos; sem assets reais |
+| 8 — Contato | S11, `/privacidade` | ✅ Form, rate limit, Turnstile, LGPD; sem envio real |
+| 9 — SEO/A11y | JSON-LD S10, OG S14, auditoria | 🟡 JSON-LD e OG ok; sem Lighthouse prod |
+
+### Telas por seção
+
+| Seção | Âncora | Status |
+|---|---|---|
+| S1 Barra de topo | fixa | ✅ Skip-link, scroll-aware, menu mobile `<dialog>`, sound toggle |
+| S2 Preloader / boot | overlay | ✅ 1.2s max, só 1ª visita, sem progresso falso |
+| S3 Hero | `#topo` | ✅ Badge, H1, CTAs, HUD cards, cabinet 3D, identity card |
+| S4 Marquee | — | ✅ Duplo CSS (direções opostas), reduced-motion |
+| S5 Sobre | `#sobre` | ✅ Terminal frame, cursor blink, prompt, highlight |
+| S6 Processo | `#processo` | ✅ 3 steps numerados em `<ol>` |
+| S7 Projetos destaque | `#projetos` | ✅ Grid de cards + estado vazio; dados do MDX |
+| S8 Vitrine código | `#codigo` | ❌ Bloqueado |
+| S9 Serviços | `#servicos` | ✅ 6 cards com ícones Lucide |
+| S10 FAQ | `#faq` | ✅ Radix Accordion, 4 itens, JSON-LD FAQPage |
+| S11 Contato | `#contato` | ✅ Form, Turnstile, honeypot, rate limit, LGPD, alt channel |
+| S12 Rodapé | — | ✅ Logo, links, copyright, "servidor próprio" |
+| S13 `/projetos` | rota | ✅ Listagem, estado vazio |
+| S14 `/projetos/[slug]` | rota | ✅ HUD, capa `next/image`, TOC, MDX, prev/next, OG |
+| S15 Erro | 404/500 | ✅ "ERRO 404" + "FALHA CRÍTICA" estilizados |
 
 ---
 

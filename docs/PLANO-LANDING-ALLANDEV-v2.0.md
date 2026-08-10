@@ -590,3 +590,55 @@ Resolvidas nesta versao: hospedagem (VPS propria), estrategia de lancamento (lin
 | `PRODUCT.md` | Publico, proposito, personalidade e principios | v1.0 |
 | `DESIGN.md` | Paleta do logo, tipografia, layout, componentes e motion | v1.0 |
 | Planos `NEXUSTECH` e fonte Muniz | Referencias historicas; nao implementar diretamente | Arquivo |
+
+---
+
+## 11. Status da implementação (atualizado 2026-08-10)
+
+| Fase | Nome | Status | Commits | Pendências |
+|---|---|---|---|---|
+| 0 | Fundação, infra e pipeline | ✅ Concluída | `b481cfc` | — |
+| 1 | Design system e tokens | ✅ Concluída | `3c5e08f` | — |
+| 2 | Shell (preloader, nav, menu, skip-link, 404/500) | ✅ Concluída | `3c5e08f` | — |
+| 3 | Camada de conteúdo e controle de páginas | ✅ Concluída | `3c5e08f` | — |
+| 4 | Home completa | ✅ Concluída | `3c5e08f` | — |
+| 5 | Template de página de projeto | ✅ Concluída | `4caa303` | — |
+| 6 | Imagens de código curado | ❌ Pendente | — | Token GitHub fine-grained para repo privado |
+| 7 | Mídia (vídeo, galeria, cache) | 🟡 Parcial | `83ca11e` | Assets reais de Nexos ERP e Renowa; encoder ffmpeg validado no CI |
+| 8 | Contato (envio real, anti-spam, LGPD) | 🟡 Parcial | `3c5e08f`, `83ca11e` | Teste real com Resend (sem chaves); número WhatsApp real no fallback |
+| 9 | SEO, acessibilidade e performance | 🟡 Parcial | `4caa303` | Lighthouse em produção; WCAG screen-reader; Core Web Vitals reais |
+| 10 | Lançamento (VPS, smoke tests, runbook) | ❌ Pendente | — | Deploy em VPS Hostinger; Cloudflare Analytics; Sentry; rollback real |
+
+### Workstream C — Conteúdo
+
+| Marco | Entrega | Status |
+|---|---|---|
+| C1 | Briefs + inventário de mídia | ❌ Pendente |
+| C2 | Nexos ERP e Renowa escritos (MDX completo com galeria, vídeo, resultados) | ❌ Pendente (arquivos `.mdx` existem como `draft`) |
+| C3 | Cases revisados, acessíveis e aprovados | ❌ Pendente (bloqueado por C2) |
+
+### Componentes implementados
+
+| Camada | Entregue |
+|---|---|
+| UI primitives | `Button`, `Terminal`, `Badge`, `HUDCard`, `Marquee`, `Section`, `SectionHeading` |
+| MDX components | `Gallery`, `VideoPlayer`, `Callout` (info/warning/tip), `Architecture`, `DecisionsTable`, `Metrics` |
+| Shell | Preloader (1.2s max, só 1ª visita), skip-link, header scroll-aware, menu mobile `<dialog>`, sound toggle |
+| Home | Hero (badge + HUD cards + cabinet 3D), marquee duplo CSS, Sobre (terminal frame), Processo (3 steps), Projetos (grid + estado vazio), Serviços (6 cards Lucide), FAQ (Radix Accordion), Contato, Footer |
+| Projeto | HUD metadados, TOC automático (headings), capa `next/image priority`, navegação prev/next, OG image dinâmica |
+| Contato | Zod (cliente + servidor), Turnstile, honeypot, rate limit (memória, pronto para Redis), consentimento LGPD, canal alternativo no erro |
+| SEO | JSON-LD `Person` + `FAQPage`, sitemap, robots, metadata por rota, canonical, `opengraph-image.tsx` por projeto |
+| Infra | Docker multi-stage, compose com healthcheck, volume para cache de imagens, `next/image` com `sizes`, `output: standalone` |
+| Qualidade | ESLint (0 warnings), Prettier, TypeScript strict, 6 unit tests, 16 E2E tests (chromium + mobile), `validate:content`, `test:contrast` (8 pares WCAG AA), 0 vulnerabilidades `pnpm audit --prod` |
+
+### O que NÃO está implementado
+
+- Code-shots (Fase 6) — sem token GitHub
+- Deploy em VPS (Fase 10) — sem acesso à VPS
+- Envio real de e-mail (Resend) — sem chaves API
+- Cases reais — MDXs são `draft`, sem galeria/vídeo/resultados reais
+- Web Analytics (Cloudflare) e Sentry — sem deploy prod
+- Favicon externo (`.ico` / PNG) — apenas SVG inline data URI
+- Husky pre-commit — não instalado
+- Scroll-spy na nav (IntersectionObserver) — não implementado
+- OG image default da home — não implementado

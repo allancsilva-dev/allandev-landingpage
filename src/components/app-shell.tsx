@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
-  useCallback,
   type ReactNode,
 } from "react";
 
@@ -18,69 +18,114 @@ const navItems = [
   { label: "CONTATO", href: "/#contato" },
 ] as const;
 
-function getBootSeen() {
-  if (typeof sessionStorage === "undefined") return false;
-  return sessionStorage.getItem("allandev-boot") === "1";
+function getStored(key: string, expected: string) {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.sessionStorage.getItem(key) === expected;
+  } catch {
+    return false;
+  }
 }
 
 function getSoundOn() {
-  if (typeof localStorage === "undefined") return false;
-  return localStorage.getItem("allandev-sound") === "on";
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem("allandev-sound") === "on";
+  } catch {
+    return false;
+  }
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [soundOn, setSoundOn] = useState(getSoundOn);
-  const [bootDone, setBootDone] = useState(getBootSeen);
-  const [bootVisible, setBootVisible] = useState(!getBootSeen());
+  const [soundOn, setSoundOn] = useState(false);
+  const [bootVisible, setBootVisible] = useState(true);
   const [bootFade, setBootFade] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  const playTone = useCallback((frequency = 520, duration = 0.055) => {
+    const AudioContextClass = window.AudioContext;
+    const context = audioContextRef.current ?? new AudioContextClass();
+    audioContextRef.current = context;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "square";
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.025, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      context.currentTime + duration,
+    );
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + duration);
+  }, []);
 
   useEffect(() => {
-    if (bootDone) return;
-    const max = 1200;
-    const start = performance.now();
-    const tick = () => {
-      const elapsed = performance.now() - start;
-      if (elapsed >= max) {
-        finishBoot();
-      } else {
-        requestAnimationFrame(tick);
-      }
+    if (getSoundOn()) {
+      const soundTimer = window.setTimeout(() => setSoundOn(true), 0);
+      return () => window.clearTimeout(soundTimer);
+    }
+  }, []);
+
+  useEffect(() => {
+    const skipBoot =
+      pathname !== "/" ||
+      getStored("allandev-boot", "1") ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (skipBoot) {
+      const skipTimer = window.setTimeout(() => setBootVisible(false), 0);
+      return () => window.clearTimeout(skipTimer);
+    }
+    const fadeTimer = window.setTimeout(() => setBootFade(true), 780);
+    const doneTimer = window.setTimeout(() => {
+      setBootVisible(false);
+      window.sessionStorage.setItem("allandev-boot", "1");
+    }, 1100);
+    return () => {
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(doneTimer);
     };
-    const finishBoot = () => {
-      setBootFade(true);
-      setTimeout(() => {
-        setBootVisible(false);
-        setBootDone(true);
-        if (typeof sessionStorage !== "undefined")
-          sessionStorage.setItem("allandev-boot", "1");
-      }, 400);
-      const pre = document.getElementById("preloader-progress");
-      if (pre) pre.style.width = "100%";
-    };
-    requestAnimationFrame(tick);
-  }, [bootDone]);
+  }, [pathname]);
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 40);
+      setScrolled(window.scrollY > 32);
+      const scrollable =
+        document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(scrollable > 0 ? window.scrollY / scrollable : 0);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!soundOn) return;
+    const onClick = (event: MouseEvent) => {
+      if ((event.target as Element | null)?.closest("a, button")) playTone();
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [playTone, soundOn]);
+
   const toggleSound = useCallback(() => {
-    setSoundOn((prev) => {
-      const next = !prev;
-      if (typeof localStorage !== "undefined")
-        localStorage.setItem("allandev-sound", next ? "on" : "off");
+    setSoundOn((current) => {
+      const next = !current;
+      try {
+        window.localStorage.setItem("allandev-sound", next ? "on" : "off");
+      } catch {
+        // Storage may be unavailable in private browsing; sound still works.
+      }
+      if (next) playTone(680, 0.08);
       return next;
     });
-  }, []);
+  }, [playTone]);
 
   const openMenu = useCallback(() => {
     setMenuOpen(true);
@@ -93,13 +138,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!menuOpen) return;
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handler = () => closeMenu();
-    dialog.addEventListener("close", handler);
-    return () => dialog.removeEventListener("close", handler);
-  }, [menuOpen, closeMenu]);
+    const syncClose = () => setMenuOpen(false);
+    dialog.addEventListener("close", syncClose);
+    return () => dialog.removeEventListener("close", syncClose);
+  }, []);
 
   const isHome = pathname === "/";
 
@@ -112,120 +156,91 @@ export function AppShell({ children }: { children: ReactNode }) {
       {bootVisible && (
         <div
           className={`preloader ${bootFade ? "fade-out" : ""}`}
-          role="status"
-          aria-live="polite"
-          aria-busy={!bootDone}
+          aria-hidden="true"
         >
-          <span className="preloader-logo">ALLANDEV</span>
-          <span className="preloader-status">CARREGANDO ASSETS...</span>
-          <div className="preloader-bar">
-            <div
-              id="preloader-progress"
-              className="preloader-fill"
-              style={{ width: "0%" }}
-            />
-          </div>
-          <span className="preloader-counter">INICIALIZANDO</span>
+          <span className="preloader-kicker">ALLANDEV / BOOT SEQUENCE</span>
+          <span className="preloader-logo">SYSTEM ONLINE</span>
+          <span className="preloader-status">INFRA · SOFTWARE · OPERAÇÃO</span>
         </div>
       )}
 
-      {(bootDone || !isHome) && (
-        <>
-          <header
-            className={`site-header ${scrolled ? "header-scrolled" : ""}`}
-          >
-            <Link className="wordmark" href="/" aria-label="AllanDev — início">
-              ALLAN<span>DEV</span>
+      <header className={`site-header ${scrolled ? "header-scrolled" : ""}`}>
+        <span
+          className="scroll-progress"
+          style={{ transform: `scaleX(${scrollProgress})` }}
+          aria-hidden="true"
+        />
+        <Link className="wordmark" href="/" aria-label="AllanDev — início">
+          ALLAN<span>DEV</span>
+        </Link>
+        <nav className="nav-desktop" aria-label="Principal">
+          {(isHome
+            ? navItems
+            : navItems.filter(({ label }) => label !== "PROCESSO")
+          ).map((item) => (
+            <Link key={item.href} href={item.href}>
+              {item.label}
             </Link>
-            <nav className="nav-desktop" aria-label="Principal">
-              {isHome ? (
-                <>
-                  <Link href="/#sobre">SOBRE</Link>
-                  <Link href="/#processo">PROCESSO</Link>
-                  <Link href="/#projetos">PROJETOS</Link>
-                  <Link href="/#servicos">SERVIÇOS</Link>
-                  <Link href="/#contato">CONTATO</Link>
-                </>
-              ) : (
-                <>
-                  <Link href="/">HOME</Link>
-                  <Link href="/projetos">PROJETOS</Link>
-                  <Link href="/#contato">CONTATO</Link>
-                </>
-              )}
-              <button
-                className="sound-toggle"
-                onClick={toggleSound}
-                aria-pressed={soundOn}
-                aria-label={soundOn ? "Desligar som" : "Ligar som"}
-              >
-                {soundOn ? "♫" : "♪"}
-              </button>
-              <Link className="button button-primary nav-cta" href="/#contato">
-                FALAR COMIGO
-              </Link>
-            </nav>
-            <div className="nav-mobile">
-              <button
-                className="sound-toggle"
-                onClick={toggleSound}
-                aria-pressed={soundOn}
-                aria-label={soundOn ? "Desligar som" : "Ligar som"}
-              >
-                {soundOn ? "♫" : "♪"}
-              </button>
-              <button
-                className="button button-secondary"
-                onClick={openMenu}
-                aria-expanded={menuOpen}
-                style={{ minHeight: "2.5rem", fontSize: "0.72rem" }}
-              >
-                ≡ MENU
-              </button>
-            </div>
-          </header>
-
-          <dialog
-            ref={dialogRef}
-            className="mobile-menu-dialog"
-            aria-label="Menu principal"
+          ))}
+          <button
+            className="sound-toggle"
+            onClick={toggleSound}
+            aria-pressed={soundOn}
+            aria-label={soundOn ? "Desligar som" : "Ligar som"}
           >
-            <button className="close-button" onClick={closeMenu} autoFocus>
-              ✕ FECHAR
-            </button>
-            <div className="mobile-menu-content">
-              <Link href="/" onClick={closeMenu}>
-                HOME
-              </Link>
-              {isHome &&
-                navItems.map((item) => (
-                  <a key={item.href} href={item.href} onClick={closeMenu}>
-                    {item.label}
-                  </a>
-                ))}
-              {!isHome && (
-                <>
-                  <Link href="/projetos" onClick={closeMenu}>
-                    PROJETOS
-                  </Link>
-                  <Link href="/#contato" onClick={closeMenu}>
-                    CONTATO
-                  </Link>
-                </>
-              )}
-              <Link
-                className="button button-primary"
-                href="/#contato"
-                onClick={closeMenu}
-              >
-                FALAR COMIGO
-              </Link>
-            </div>
-          </dialog>
+            SOM {soundOn ? "ON" : "OFF"}
+          </button>
+          <Link className="button button-primary nav-cta" href="/#contato">
+            FALAR COMIGO ↗
+          </Link>
+        </nav>
+        <div className="nav-mobile">
+          <button
+            className="sound-toggle"
+            onClick={toggleSound}
+            aria-pressed={soundOn}
+            aria-label={soundOn ? "Desligar som" : "Ligar som"}
+          >
+            {soundOn ? "♫" : "♪"}
+          </button>
+          <button
+            className="menu-button"
+            onClick={openMenu}
+            aria-expanded={menuOpen}
+          >
+            MENU
+          </button>
+        </div>
+      </header>
 
-          <div id="main-content">{children}</div>
-        </>
-      )}
+      <dialog
+        ref={dialogRef}
+        className="mobile-menu-dialog"
+        aria-label="Menu principal"
+      >
+        <button className="close-button" onClick={closeMenu} autoFocus>
+          ✕ FECHAR
+        </button>
+        <div className="mobile-menu-content">
+          <Link href="/" onClick={closeMenu}>
+            HOME
+          </Link>
+          {navItems.map((item) => (
+            <a key={item.href} href={item.href} onClick={closeMenu}>
+              {item.label}
+            </a>
+          ))}
+          <Link
+            className="button button-primary"
+            href="/#contato"
+            onClick={closeMenu}
+          >
+            FALAR COMIGO
+          </Link>
+        </div>
+      </dialog>
+
+      <div id="main-content">{children}</div>
     </>
   );
 }

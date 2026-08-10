@@ -54,15 +54,15 @@ const pairs: TokenPair[] = [
 ];
 
 const raw: Record<string, string> = {
-  "var(--allan-ink)": "oklch(0.955 0.018 230)",
-  "var(--allan-ink-muted)": "oklch(0.76 0.04 235)",
-  "var(--allan-bg-void)": "oklch(0.105 0.028 260)",
-  "var(--allan-bg-surface)": "oklch(0.155 0.045 258)",
-  "var(--allan-bg-elevated)": "oklch(0.205 0.06 257)",
-  "var(--allan-cyan)": "oklch(0.78 0.16 180)",
-  "var(--allan-blue)": "oklch(0.65 0.2 252)",
-  "var(--allan-violet)": "oklch(0.64 0.23 302)",
-  "var(--allan-magenta)": "oklch(0.7 0.22 335)",
+  "var(--allan-ink)": "oklch(0.96 0.02 240)",
+  "var(--allan-ink-muted)": "oklch(0.78 0.055 245)",
+  "var(--allan-bg-void)": "oklch(0.075 0.035 270)",
+  "var(--allan-bg-surface)": "oklch(0.13 0.055 270)",
+  "var(--allan-bg-elevated)": "oklch(0.19 0.085 270)",
+  "var(--allan-cyan)": "oklch(0.82 0.18 205)",
+  "var(--allan-blue)": "oklch(0.67 0.23 258)",
+  "var(--allan-violet)": "oklch(0.66 0.26 300)",
+  "var(--allan-magenta)": "oklch(0.72 0.26 335)",
   "var(--allan-success)": "oklch(0.76 0.17 150)",
   "var(--allan-danger)": "oklch(0.68 0.2 25)",
 };

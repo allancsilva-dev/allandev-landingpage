@@ -1,26 +1,26 @@
 import Link from "next/link";
 import {
   Accordion as AccordionRoot,
+  AccordionContent,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@radix-ui/react-accordion";
 import {
+  ArrowUpRight,
+  Braces,
+  Database,
+  GitBranch,
   Monitor,
+  Network,
   Server,
   Smartphone,
-  Database,
-  Network,
-  GitBranch,
 } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
-import { listPublishedProjects } from "@/lib/content/projects";
-import { homeContent } from "@/lib/home-content";
-import { Badge } from "@/components/ui/badge";
-import { Terminal } from "@/components/ui/terminal";
-import { HUDCard } from "@/components/ui/hud-card";
+import { HomeStage } from "@/components/home-stage";
 import { Marquee } from "@/components/ui/marquee";
-import { Section, SectionHeading } from "@/components/ui/section";
+import { Terminal } from "@/components/ui/terminal";
+import { listHomeProjectTeasers } from "@/lib/content/projects";
+import { homeContent } from "@/lib/home-content";
 
 const iconMap = {
   Monitor,
@@ -32,7 +32,7 @@ const iconMap = {
 };
 
 export default async function Home() {
-  const projects = await listPublishedProjects();
+  const projectTeasers = await listHomeProjectTeasers();
   const {
     hero,
     marquee,
@@ -75,7 +75,7 @@ export default async function Home() {
   };
 
   return (
-    <main>
+    <main className="home-page">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -84,15 +84,38 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      {/* S3 — Hero */}
-      <section className="hero" id="topo" aria-labelledby="hero-title">
-        <div className="hero-copy">
-          <Badge variant="available">{hero.badge}</Badge>
+
+      <section className="home-hero" id="topo" aria-labelledby="hero-title">
+        <div className="home-cockpit-frame" aria-hidden="true" />
+        <aside className="home-command-rail" aria-label="Status profissional">
+          <div className="rail-identity">
+            <span className="rail-mark" aria-hidden="true">
+              A
+            </span>
+            <div>
+              <strong>ALLAN CARVALHO</strong>
+              <span>INFRA &amp; FULL STACK</span>
+            </div>
+          </div>
+          <div className="rail-status">
+            <span className="status-light" aria-hidden="true" />
+            <div>
+              <strong>{hero.badge}</strong>
+              <span>RETORNO EM ATÉ 24H</span>
+            </div>
+          </div>
+        </aside>
+
+        <div className="home-hero-copy">
+          <p className="hero-system-label">
+            <Braces size={17} aria-hidden="true" /> MISSÃO / 01
+          </p>
           <h1 id="hero-title">{hero.title}</h1>
           <p className="hero-lede">{hero.lede}</p>
           <div className="hero-actions">
             <a className="button button-primary" href={hero.ctaPrimary.href}>
-              {hero.ctaPrimary.label}
+              {hero.ctaPrimary.label}{" "}
+              <ArrowUpRight size={17} aria-hidden="true" />
             </a>
             <a
               className="button button-secondary"
@@ -101,132 +124,157 @@ export default async function Home() {
               {hero.ctaSecondary.label}
             </a>
           </div>
-          <div className="hero-huds">
-            <HUDCard {...hero.hud[0]} />
-            <HUDCard {...hero.hud[1]} />
-          </div>
         </div>
-        <div className="cabinet" aria-label="Painel técnico AllanDev">
-          <div className="cabinet-screen">
-            <p>ALLANDEV / SYSTEM</p>
-            <strong>READY</strong>
-            <dl>
-              <div>
-                <dt>STACK</dt>
-                <dd>FULL</dd>
-              </div>
-              <div>
-                <dt>DEPLOY</dt>
-                <dd>OWNED</dd>
-              </div>
-              <div>
-                <dt>FOCUS</dt>
-                <dd>RESULT</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="cabinet-controls" aria-hidden="true">
-            <span className="joystick" />
-            <span className="control cyan" />
-            <span className="control violet" />
-          </div>
+
+        <HomeStage />
+      </section>
+
+      <div className="home-marquee-wrap">
+        <Marquee items={marquee.top} direction="left" speed={44} />
+        <span className="marquee-status" aria-hidden="true">
+          SYSTEM ONLINE
+        </span>
+      </div>
+
+      <section
+        className="home-projects"
+        id="projetos"
+        aria-labelledby="projetos-title"
+      >
+        <div className="projects-intro">
+          <p>PROJETOS EM DESTAQUE</p>
+          <h2 id="projetos-title">{projetos.title}</h2>
+          <span>{projetos.lede}</span>
         </div>
-        <div className="hero-identity">
-          <strong>{hero.identity.name}</strong>
-          <span>{hero.identity.line}</span>
+        <div className="project-teaser-grid">
+          {projectTeasers.map((project) => {
+            const content = (
+              <>
+                <span className="project-art" aria-hidden="true">
+                  <span />
+                </span>
+                <span className="project-status">
+                  {project.homeTeaser?.label}
+                </span>
+                <strong>{project.titulo}</strong>
+                <p>{project.resumo}</p>
+                <span className="project-meta">
+                  <span>{project.papel}</span>
+                  <span>{project.stack.slice(0, 4).join(" · ")}</span>
+                </span>
+                <span className="project-action">
+                  {project.status === "published"
+                    ? "VER CASE"
+                    : "PEDIR APRESENTAÇÃO"}
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </span>
+              </>
+            );
+
+            return project.status === "published" ? (
+              <Link
+                className={`project-teaser project-${project.homeTeaser?.visualVariant}`}
+                href={`/projetos/${project.slug}`}
+                key={project.slug}
+              >
+                {content}
+              </Link>
+            ) : (
+              <a
+                className={`project-teaser project-${project.homeTeaser?.visualVariant}`}
+                href="#contato"
+                key={project.slug}
+                aria-label={`Pedir apresentação do projeto ${project.titulo}`}
+              >
+                {content}
+              </a>
+            );
+          })}
         </div>
       </section>
 
-      {/* S4 — Marquee duplo */}
-      <Marquee items={marquee.top} direction="left" speed={40} />
-      <Marquee items={marquee.bottom} direction="right" speed={55} />
-
-      {/* S5 — Sobre */}
-      <Section id="sobre" aria-labelledby="sobre-title">
-        <SectionHeading eyebrow={sobre.eyebrow} title={sobre.title} />
+      <section className="home-about" id="sobre" aria-labelledby="sobre-title">
+        <div className="about-copy">
+          <h2 id="sobre-title">{sobre.title}</h2>
+          <p>
+            O mesmo profissional que desenha interface também pensa em deploy,
+            observabilidade, banco e operação. Menos repasse. Mais contexto.
+          </p>
+          <dl className="about-principles">
+            <div>
+              <dt>VISÃO</dt>
+              <dd>Da rede à experiência final</dd>
+            </div>
+            <div>
+              <dt>CRITÉRIO</dt>
+              <dd>Arquitetura pronta para operar</dd>
+            </div>
+          </dl>
+        </div>
         <Terminal abaLable={sobre.abaLable} prompt={sobre.prompt}>
           <p>{sobre.body}</p>
           <p className="terminal-highlight">{sobre.highlight}</p>
         </Terminal>
-      </Section>
+      </section>
 
-      {/* S6 — Processo */}
-      <Section id="processo" aria-labelledby="processo-title">
-        <SectionHeading eyebrow={processo.eyebrow} title={processo.title} />
-        <ol className="processo-list">
-          {processo.steps.map((step, i) => (
+      <section
+        className="home-process"
+        id="processo"
+        aria-labelledby="processo-title"
+      >
+        <div className="process-heading">
+          <span>BRIEFING → PRODUÇÃO</span>
+          <h2 id="processo-title">{processo.title}</h2>
+        </div>
+        <ol className="process-timeline">
+          {processo.steps.map((step, index) => (
             <li key={step.title}>
-              <span className="processo-num" aria-hidden="true">
-                {String(i + 1).padStart(2, "0")}
+              <span className="process-number" aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
               </span>
-              <h3>{step.title}</h3>
-              <p>{step.description}</p>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </div>
             </li>
           ))}
         </ol>
-      </Section>
+      </section>
 
-      {/* S7 — Projetos em destaque */}
-      <Section id="projetos" aria-labelledby="projetos-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">{projetos.eyebrow}</p>
-            <h2 id="projetos-title">{projetos.title}</h2>
-          </div>
-          <div>
-            {projects.length > 0 && (
-              <Link className="section-link" href="/projetos">
-                {projetos.viewAll}
-              </Link>
-            )}
-          </div>
+      <section
+        className="home-services"
+        id="servicos"
+        aria-labelledby="servicos-title"
+      >
+        <div className="services-heading">
+          <h2 id="servicos-title">{servicos.title}</h2>
+          <p>
+            Construção, modernização e operação no mesmo contexto técnico. Entre
+            pelo problema; stack vem depois.
+          </p>
         </div>
-        <p className="section-lede">{projetos.lede}</p>
-        {projects.length === 0 ? (
-          <div className="empty-projects">
-            <span>{projetos.emptyLabel}</span>
-            <p>{projetos.emptyText}</p>
-          </div>
-        ) : (
-          <ul className="project-list">
-            {projects.map((project) => (
-              <li key={project.slug}>
-                <Link href={`/projetos/${project.slug}`}>
-                  <span>{project.papel}</span>
-                  <strong>{project.titulo}</strong>
-                  <p>{project.resumo}</p>
-                  <span className="project-stack">
-                    {project.stack.slice(0, 3).join(", ")}
-                    {project.stack.length > 3 &&
-                      ` +${project.stack.length - 3}`}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
-
-      {/* S9 — Serviços */}
-      <Section id="servicos" aria-labelledby="servicos-title">
-        <SectionHeading eyebrow={servicos.eyebrow} title={servicos.title} />
-        <ul className="servicos-grid">
-          {servicos.items.map((item) => {
+        <ul className="services-list">
+          {servicos.items.map((item, index) => {
             const Icon = iconMap[item.icon];
             return (
               <li key={item.title}>
-                <Icon aria-hidden="true" size={28} />
+                <span className="service-index">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <Icon aria-hidden="true" size={24} strokeWidth={1.6} />
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
               </li>
             );
           })}
         </ul>
-      </Section>
+      </section>
 
-      {/* S10 — FAQ */}
-      <Section id="faq" aria-labelledby="faq-title">
-        <SectionHeading eyebrow={faq.eyebrow} title={faq.title} />
+      <section className="home-faq" id="faq" aria-labelledby="faq-title">
+        <div className="faq-heading">
+          <h2 id="faq-title">{faq.title}</h2>
+          <p>Respostas diretas antes de abrir canal.</p>
+        </div>
         <AccordionRoot type="single" collapsible defaultValue={faq.items[0].q}>
           {faq.items.map((item) => (
             <AccordionItem key={item.q} value={item.q} className="faq-item">
@@ -240,25 +288,28 @@ export default async function Home() {
             </AccordionItem>
           ))}
         </AccordionRoot>
-      </Section>
+      </section>
 
-      {/* S11 — Contato */}
-      <Section id="contato" aria-labelledby="contato-title">
-        <div className="contato-grid">
-          <div className="contato-intro">
-            <h2 id="contato-title">{contato.title}</h2>
-            <p>{contato.lede}</p>
-            <a href={`mailto:${contato.email}`}>{contato.email}</a>
-          </div>
-          <ContactForm />
+      <section
+        className="home-contact"
+        id="contato"
+        aria-labelledby="contato-title"
+      >
+        <div className="contact-orbit" aria-hidden="true" />
+        <div className="contato-intro">
+          <p>ABRIR NOVA MISSÃO</p>
+          <h2 id="contato-title">{contato.title}</h2>
+          <span>{contato.lede}</span>
+          <a href={`mailto:${contato.email}`}>{contato.email} ↗</a>
         </div>
-      </Section>
+        <ContactForm />
+      </section>
 
-      {/* S12 — Footer */}
-      <footer>
+      <footer className="home-footer">
+        <strong>ALLANDEV</strong>
         <span>© {new Date().getFullYear()} Allan Carvalho</span>
-        <Link href="/privacidade">Privacidade</Link>
         <span>{footer.tagline}</span>
+        <Link href="/privacidade">Privacidade</Link>
       </footer>
     </main>
   );

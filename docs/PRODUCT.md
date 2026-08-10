@@ -31,7 +31,7 @@ Sucesso significa:
 
 ## Relacao com Nexos Tech
 
-Allan/ALLANDEV e marca principal. Nexos Tech aparece como empresa fundada ou representada por Allan, como contexto do Nexos ERP e como origem da paleta cromatica. Logo Nexos Tech nao substitui assinatura pessoal no hero, navegacao, favicon ou metadados principais.
+Allan/ALLANDEV e marca principal. Nexos Tech aparece como empresa fundada ou representada por Allan, como contexto do Nexos ERP e como origem da paleta cromatica. Logo Nexos Tech pode ser a imagem principal do hero como credencial visual fundada por Allan, desde que ALLANDEV e Allan Carvalho permaneçam como assinatura textual dominante. Nao substitui navegacao, favicon ou metadados pessoais.
 
 ## Referencias e anti-referencias
 

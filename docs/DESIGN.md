@@ -2,7 +2,7 @@
 
 ## Direcao
 
-Portfolio arcade retro 3D com acabamento tecnico. Fundo profundo, luz eletrica e superficies inspiradas em gabinete de fliperama e interfaces de jogo, sem transformar leitura em simulacao de terminal.
+Portfolio arcade retro 3D com acabamento tecnico. Fundo cosmico azul profundo, luz eletrica e superficies inspiradas em cockpit de fliperama e circuitos, sem transformar leitura em simulacao de terminal.
 
 Allan/ALLANDEV domina assinatura. Nexos Tech entra como credencial e origem cromatica.
 
@@ -19,8 +19,8 @@ Antes da implementacao, amostrar cores diretamente do logo, converter para OKLCH
 | `--allan-bg-elevated` | azul escuro | controles e midia |
 | `--allan-ink` | branco azulado | titulos e corpo |
 | `--allan-ink-muted` | azul acinzentado claro | texto secundario aprovado em AA |
-| `--allan-blue` | azul eletrico do logo | CTA e foco |
-| `--allan-cyan` | ciano luminoso do logo | estado ativo e assinatura |
+| `--allan-blue` | azul eletrico do logo | cor dominante, molduras e profundidade |
+| `--allan-cyan` | ciano luminoso do logo | CTA, foco e estado ativo |
 | `--allan-violet` | violeta do logo | profundidade e luz secundaria |
 | `--allan-magenta` | magenta do logo | detalhe raro, nunca texto corrido |
 | `--allan-success` / `--allan-danger` | cores semanticas | feedback, sempre com icone/texto |
@@ -38,7 +38,7 @@ Titulos usam `text-wrap: balance`, tracking nunca menor que `-0.04em`; corpo fic
 ## Layout
 
 - Conteiner fluido com limites de leitura, espacamento por `clamp()` e ritmo variado.
-- Hero assimetrico: mensagem/CTAs de um lado, assinatura visual 3D do outro.
+- Hero em cockpit assimetrico: rail com mensagem/CTAs e logo Nexos Tech em palco orbital 3D. ALLANDEV e Allan Carvalho permanecem como assinatura principal.
 - Projetos destacados aparecem cedo, antes de secoes institucionais longas.
 - Cards so quando representam objetos acionaveis: projeto, etapa ou opcao real.
 - Case usa narrativa vertical com midia ampla; sumario sticky somente em desktop.
@@ -73,4 +73,4 @@ Evitar nested cards, glassmorphism padrao, bordas laterais decorativas, cantos a
 
 ## Uso do logo Nexos Tech
 
-Logo pode aparecer no case Nexos ERP e na historia profissional de Allan. Preservar proporcao, cores e area de respiro. Nunca usar como logo principal do portfolio, favicon pessoal ou marca d'agua global.
+Logo aparece como imagem/credencial principal do hero, no case Nexos ERP e na historia profissional de Allan. Preservar proporcao, cores e area de respiro. ALLANDEV continua sendo wordmark do portfolio; logo Nexos Tech nao vira favicon pessoal nem marca d'agua global.

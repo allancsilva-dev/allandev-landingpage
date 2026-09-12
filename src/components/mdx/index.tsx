@@ -1,28 +1,6 @@
 import type { ReactNode } from "react";
 
-export function Gallery({
-  images,
-}: {
-  images: { src: string; alt: string; legenda?: string }[];
-}) {
-  return (
-    <figure
-      className="mdx-gallery"
-      role="group"
-      aria-label="Galeria do projeto"
-    >
-      <div className="mdx-gallery-grid">
-        {images.map((img) => (
-          <div key={img.src} className="mdx-gallery-item">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img.src} alt={img.alt} loading="lazy" />
-            {img.legenda && <figcaption>{img.legenda}</figcaption>}
-          </div>
-        ))}
-      </div>
-    </figure>
-  );
-}
+export { Gallery } from "./gallery";
 
 export function VideoPlayer({
   src,
@@ -117,7 +95,7 @@ export function Metrics({
   resultados: { valor: string; rotulo: string; contexto: string }[];
 }) {
   return (
-    <div className="mdx-metrics" role="list" aria-label="Resultados">
+    <div className="mdx-metrics" role="list" aria-label="Evidências técnicas">
       {resultados.map((r) => (
         <div className="mdx-metric" role="listitem" key={r.rotulo}>
           <strong>{r.valor}</strong>

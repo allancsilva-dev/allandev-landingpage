@@ -52,8 +52,54 @@ body::before {
   align-items: center;
   gap: 8px;
 }
-.arcade-player-mini {
+
+/* Desktop nav: links in the middle, sound + CTA on the right (S1). */
+.nav-desktop {
   display: none;
+  gap: clamp(14px, 2vw, 30px);
+}
+.nav-desktop a {
+  padding: 6px 0;
+  color: var(--allan-ink-muted);
+  font: 0.56rem var(--font-display);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 160ms ease-out,
+    border-color 160ms ease-out;
+}
+.nav-desktop a:hover {
+  color: var(--allan-ink);
+}
+.nav-desktop a[aria-current="true"] {
+  color: var(--allan-cyan);
+  border-bottom-color: var(--allan-cyan);
+}
+.nav-cta {
+  display: none;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid var(--allan-cyan);
+  color: var(--allan-cyan);
+  font: 0.56rem var(--font-display);
+  text-decoration: none;
+  border-radius: 4px;
+}
+.nav-cta:hover {
+  background: var(--allan-cyan);
+  color: var(--allan-bg-void);
+}
+@media (min-width: 1024px) {
+  .nav-desktop {
+    display: flex;
+  }
+  .nav-cta {
+    display: inline-flex;
+  }
+  .arcade-menu-button {
+    display: none;
+  }
 }
 .arcade-sound-toggle,
 .arcade-menu-button {
@@ -345,6 +391,56 @@ body::before {
   pointer-events: none;
   content: "";
 }
+
+/* Scanlines stay on the portrait and on project media. A full-page overlay
+   would change effective contrast over body copy, and `pnpm test:contrast`
+   cannot model an overlay. */
+.player-portrait::after,
+.project-cover::after {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: repeating-linear-gradient(
+    to bottom,
+    oklch(1 0 0 / 0.05) 0 1px,
+    transparent 1px 3px
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  content: "";
+}
+.project-cover::after {
+  z-index: 1;
+}
+
+/* Pixel corners: cartridge-select motif, on hover/focus only. */
+.pixel-corners::before,
+.pixel-corners::after {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--allan-cyan);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms var(--ease-out-expo);
+  content: "";
+}
+.pixel-corners::before {
+  top: -5px;
+  left: -5px;
+  border-width: 2px 0 0 2px;
+}
+.pixel-corners::after {
+  right: -5px;
+  bottom: -5px;
+  border-width: 0 2px 2px 0;
+}
+.pixel-corners:hover::before,
+.pixel-corners:hover::after,
+.pixel-corners:focus-within::before,
+.pixel-corners:focus-within::after {
+  opacity: 1;
+}
 .player-portrait {
   position: relative;
   width: 220px;
@@ -391,28 +487,78 @@ body::before {
 .hero-boot {
   position: absolute;
   inset: 0;
+  z-index: var(--z-boot);
   display: grid;
-  place-content: center;
-  gap: 12px;
-  background: oklch(0.1 0.06 275 / 0.96);
-  text-align: center;
+  align-content: center;
+  justify-items: start;
+  gap: 14px;
+  padding-inline: 0;
+  /* Near-opaque on purpose: a translucent curtain let the hero copy bleed
+     through and read as a rendering bug. */
+  background: linear-gradient(
+    100deg,
+    oklch(0.085 0.05 272 / 0.995) 55%,
+    oklch(0.11 0.07 285 / 0.975)
+  );
 }
-.hero-boot span,
-.hero-boot strong,
-.hero-boot button {
-  font: 0.55rem/1.6 var(--font-display);
-}
-.hero-boot span {
+.hero-boot-brand {
+  margin: 0;
   color: var(--allan-cyan);
+  font: 0.62rem var(--font-display);
 }
-.hero-boot button {
-  width: fit-content;
-  margin: 8px auto 0;
-  padding: 8px 12px;
-  border: 1px solid var(--allan-cyan);
-  background: transparent;
+.hero-boot-status {
+  margin: 0;
+  min-height: 1.6em;
   color: var(--allan-ink);
+  font: 0.55rem/1.6 var(--font-mono);
+  letter-spacing: 0.08em;
+}
+.hero-boot-bar {
+  width: min(260px, 60%);
+  height: 6px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.hero-boot-bar i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--allan-cyan) 0 6px,
+    transparent 6px 10px
+  );
+  transform-origin: left;
+  animation: boot-bar linear forwards;
+}
+@keyframes boot-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.hero-boot-start {
+  margin-top: 6px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid var(--allan-cyan);
+  background: transparent;
+  color: var(--allan-cyan);
+  font: 0.6rem var(--font-display);
   cursor: pointer;
+  animation: boot-blink 1.05s step-end infinite;
+}
+.hero-boot-start:hover {
+  background: var(--allan-cyan);
+  color: var(--allan-bg-void);
+  animation: none;
+}
+@keyframes boot-blink {
+  50% {
+    opacity: 0.45;
+  }
 }
 
 .home-marquee {
@@ -426,23 +572,47 @@ body::before {
   font: 0.58rem var(--font-display);
   white-space: nowrap;
 }
+.marquee + .marquee {
+  padding-top: 0;
+  border-top: 1px solid var(--line);
+  color: var(--allan-ink-muted);
+}
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee linear infinite;
+  animation: marquee-left linear infinite;
+}
+.marquee-track.marquee-right {
+  animation-name: marquee-right;
 }
 .marquee-track span {
   padding-right: 4rem;
-}
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 .home-section {
   padding: clamp(80px, 10vw, 132px) 0;
   border-bottom: 1px solid var(--line);
+}
+
+/* Reveal: the hidden state is opt-in from the client, never in the SSR HTML. */
+[data-reveal] {
+  transition:
+    opacity 520ms var(--ease-out-expo),
+    transform 520ms var(--ease-out-expo);
+}
+[data-reveal="pending"] {
+  opacity: 0;
+  transform: translateY(22px);
+}
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+}
+@media print {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 .home-section h2 {
   margin: 0;
@@ -452,8 +622,7 @@ body::before {
 }
 .section-heading > p,
 .services-intro > p,
-.contact-copy > p,
-.section-label {
+.contact-copy > p {
   margin: 0 0 18px;
   color: var(--allan-cyan);
   font: 0.58rem var(--font-display);
@@ -470,19 +639,6 @@ body::before {
   display: grid;
   grid-template-columns: 0.75fr 1.25fr;
   gap: clamp(40px, 8vw, 110px);
-}
-.about-copy > p {
-  max-width: 70ch;
-  margin: 0;
-  color: var(--allan-ink-muted);
-  font-size: 1.125rem;
-  line-height: 1.75;
-}
-.about-copy > strong {
-  display: block;
-  margin-top: 24px;
-  color: var(--allan-cyan);
-  font: 0.8rem/1.7 var(--font-mono);
 }
 .about-copy ul,
 .project-copy ul {
@@ -546,8 +702,23 @@ body::before {
 }
 .home-projects .section-heading > span {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1;
   margin: 0;
+}
+.section-action {
+  align-self: end;
+  color: var(--allan-cyan);
+  font: 0.58rem var(--font-display);
+  text-decoration: none;
+}
+.home-projects .section-action {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: start;
+}
+.section-action:hover {
+  text-decoration: underline;
+  text-underline-offset: 5px;
 }
 .project-grid {
   display: grid;
@@ -555,13 +726,33 @@ body::before {
   gap: 24px;
 }
 .project-card {
-  overflow: hidden;
+  /* No overflow: hidden here — it would clip the pixel corners. The cover
+     clips its own image. */
+  position: relative;
   background: var(--allan-bg-surface);
+  border: 1px solid transparent;
+  transition:
+    transform 320ms var(--ease-out-expo),
+    border-color 320ms var(--ease-out-expo);
+}
+.project-card:hover,
+.project-card:focus-within {
+  transform: translateY(-6px);
+  border-color: var(--allan-cyan);
 }
 .project-cover {
+  position: relative;
   aspect-ratio: 16/9;
   overflow: hidden;
   background: var(--allan-bg-elevated);
+}
+.project-cover .badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  border: 1px solid var(--line);
+  font: 0.5rem var(--font-display);
+  backdrop-filter: blur(4px);
 }
 .project-cover img {
   width: 100%;
@@ -572,17 +763,56 @@ body::before {
 .project-card:hover img {
   transform: scale(1.025);
 }
+.project-media-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--allan-bg-void);
+}
+/* Sits above the heading link's stretched ::after so the click plays the demo
+   instead of navigating to the case. */
+.project-play {
+  position: absolute;
+  z-index: 1;
+  bottom: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid var(--allan-cyan);
+  background: oklch(0.075 0.035 270 / 0.72);
+  color: var(--allan-cyan);
+  font: 0.5rem var(--font-display);
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition:
+    background-color 220ms var(--ease-out-expo),
+    box-shadow 220ms var(--ease-out-expo);
+}
+.project-play:hover,
+.project-play:focus-visible {
+  background: oklch(0.13 0.055 270 / 0.9);
+  box-shadow: 0 0 12px oklch(0.82 0.18 205 / 0.45);
+}
 .project-copy {
   padding: 26px;
-}
-.project-copy > p {
-  margin: 0 0 12px;
-  color: var(--allan-cyan);
-  font: 0.55rem var(--font-display);
 }
 .project-copy h3 {
   margin: 0;
   font: 400 0.9rem/1.5 var(--font-display);
+}
+/* The heading holds the only link; its ::after covers the card so the whole
+   surface is clickable without nesting links inside links. */
+.project-copy h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+.project-copy h3 a::after {
+  position: absolute;
+  inset: 0;
+  content: "";
 }
 .project-copy > span {
   display: block;
@@ -590,14 +820,118 @@ body::before {
   margin: 16px 0 0;
   color: var(--allan-ink-muted);
 }
-.project-copy a {
+.project-card-action {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 28px;
+  margin: 28px 0 0;
   color: var(--allan-cyan);
   font: 0.58rem var(--font-display);
-  text-decoration: none;
+}
+.project-card:hover .project-card-action,
+.project-card:focus-within .project-card-action {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.home-code .code-showcase {
+  display: grid;
+  gap: 24px;
+  margin-top: 44px;
+}
+.code-showcase-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+}
+.code-showcase-tabs button {
+  display: grid;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  background: var(--allan-bg-surface);
+  color: var(--allan-ink-muted);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 220ms var(--ease-out-expo),
+    color 220ms var(--ease-out-expo);
+}
+.code-showcase-tabs button:hover {
+  border-color: var(--allan-cyan);
+}
+.code-showcase-tabs button[aria-selected="true"] {
+  border-color: var(--allan-cyan);
+  color: var(--allan-ink);
+  box-shadow: inset 3px 0 0 var(--allan-cyan);
+}
+.code-showcase-tab-file {
+  font: 0.75rem var(--font-mono);
+}
+.code-showcase-tab-project {
+  font: 0.5rem var(--font-display);
+  color: var(--allan-cyan);
+}
+/* The panel reserves the tallest snippet, so changing tabs never shifts the
+   page below it (S8). */
+.code-showcase-panel {
+  container-type: inline-size;
+}
+/* Reserve the tallest snippet on the image box only, so switching tabs never
+   moves the copy below it and the caption still sits right under the frame. */
+.code-showcase-panel .code-shot-image {
+  min-height: calc(100cqw * var(--shot-max-ratio, 0.8));
+}
+.code-showcase-panel:focus-visible {
+  outline: 2px solid var(--allan-cyan);
+  outline-offset: 6px;
+}
+.code-showcase-rodape,
+.code-shot-rights {
+  margin: 0;
+  color: var(--allan-ink-muted);
+  font: 0.72rem var(--font-mono);
+}
+.code-shot {
+  margin: 2.5rem 0;
+}
+.code-shot-caption {
+  margin: 16px 0 8px;
+  color: var(--allan-ink-muted);
+}
+.code-shot-image {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.code-shot-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (min-width: 1024px) {
+  .home-code .code-showcase {
+    grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+    grid-template-areas:
+      "tabs panel"
+      "rodape rodape";
+    align-items: start;
+  }
+  .code-showcase-tabs {
+    grid-area: tabs;
+    flex-direction: column;
+    overflow-x: visible;
+  }
+  .code-showcase-panel {
+    grid-area: panel;
+  }
+  .code-showcase-rodape {
+    grid-area: rodape;
+  }
 }
 .home-services {
   display: grid;
@@ -690,10 +1024,42 @@ body::before {
   word-break: normal;
   hyphens: none;
 }
-.contact-copy > a {
-  display: inline-block;
-  margin-top: 28px;
+/* Channels sit above the form: on mobile a direct channel converts better
+   than a form, and the order follows S11. */
+.contact-channels-label {
+  margin: 0 0 14px;
   color: var(--allan-cyan);
+  font: 0.55rem var(--font-display);
+}
+.contact-channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0;
+  margin: 0 0 28px;
+  list-style: none;
+}
+.contact-channels a {
+  display: grid;
+  gap: 4px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  transition:
+    border-color 200ms ease-out,
+    transform 200ms var(--ease-out-expo);
+}
+.contact-channels a:hover {
+  border-color: var(--allan-cyan);
+  transform: translateY(-2px);
+}
+.contact-channels span {
+  color: var(--allan-ink-muted);
+  font: 0.52rem var(--font-display);
+}
+.contact-channels strong {
+  color: var(--allan-ink);
+  font: 400 0.78rem var(--font-mono);
 }
 .contact-form {
   padding: 26px;
@@ -765,10 +1131,26 @@ body::before {
   color: var(--allan-ink-muted);
   font: 0.68rem var(--font-mono);
 }
+.home-footer {
+  border-top: 1px solid var(--line);
+}
 .home-footer strong {
-  margin-right: auto;
   color: var(--allan-ink);
   font-family: var(--font-display);
+}
+.home-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-right: auto;
+}
+.home-footer nav a {
+  color: var(--allan-ink-muted);
+  font: 0.55rem var(--font-display);
+  text-decoration: none;
+}
+.home-footer nav a:hover {
+  color: var(--allan-cyan);
 }
 .home-footer a {
   color: var(--allan-cyan);
@@ -777,9 +1159,6 @@ body::before {
 @media (max-width: 767px) {
   :root {
     --page: min(100% - 48px, 1200px);
-  }
-  .arcade-sound-toggle {
-    display: none;
   }
   .home-hero {
     grid-template-columns: 1fr;
@@ -836,6 +1215,7 @@ body::before {
     font-size: 0.6rem;
   }
 }
+
 @media (max-width: 520px) {
   .arcade-menu-footer {
     align-items: start;
@@ -850,6 +1230,7 @@ body::before {
     font-size: clamp(1.1rem, 7.2vw, 2rem);
   }
 }
+
 @media (max-height: 620px) {
   .arcade-menu-dialog {
     grid-template-rows: auto auto auto;
@@ -867,16 +1248,7 @@ body::before {
     font-size: 0.58rem;
   }
 }
-@media (min-width: 768px) {
-  .arcade-sound-toggle {
-    display: block;
-  }
-  .arcade-player-mini {
-    display: inline;
-    color: var(--allan-cyan);
-    font: 0.52rem var(--font-display);
-  }
-}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

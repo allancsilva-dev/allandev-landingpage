@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   Root as Accordion,
@@ -17,10 +16,17 @@ import {
   Smartphone,
 } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
+import { ProjectCard } from "@/components/project-card";
 import { HeroPlayerCard } from "@/components/hero-player-card";
+import { HeroStage } from "@/components/hero-stage";
+import { Button } from "@/components/ui/button";
 import { Marquee } from "@/components/ui/marquee";
+import { Reveal, RevealGroup } from "@/components/ui/reveal";
+import { Section, SectionHeading } from "@/components/ui/section";
+import { Terminal } from "@/components/ui/terminal";
 import { listHomeProjectTeasers } from "@/lib/content/projects";
 import { homeContent } from "@/lib/home-content";
+import { getSiteUrl } from "@/lib/site-url";
 
 const iconMap = { Monitor, Server, Smartphone, Database, Network, GitBranch };
 
@@ -35,14 +41,13 @@ export default async function Home() {
     servicos,
     faq,
     contato,
-    footer,
   } = homeContent;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
     name: "Allan Carvalho",
     jobTitle: "Desenvolvedor full-stack e infraestrutura",
-    url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000",
+    url: getSiteUrl().toString(),
     sameAs: ["https://github.com/allancsilva-dev"],
   };
   const faqJsonLd = {
@@ -56,7 +61,7 @@ export default async function Home() {
   };
 
   return (
-    <main className="arcade-home" id="conteudo">
+    <main className="arcade-home">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -67,67 +72,70 @@ export default async function Home() {
       />
 
       <section className="home-hero" id="topo" aria-labelledby="hero-title">
-        <div className="hero-copy">
-          <p className="hero-badge">
-            <i aria-hidden="true" />
-            {hero.badge}
-          </p>
-          <h1 id="hero-title">{hero.title}</h1>
-          <p className="hero-lede">{hero.lede}</p>
-          <div className="hero-actions">
-            <a className="button button-primary" href={hero.ctaPrimary.href}>
-              {hero.ctaPrimary.label}
-              <ArrowUpRight size={16} />
-            </a>
-            <a
-              className="button button-secondary"
-              href={hero.ctaSecondary.href}
-            >
-              {hero.ctaSecondary.label}
-              <ArrowDown size={16} />
-            </a>
+        <HeroStage>
+          <div className="hero-copy">
+            <p className="hero-badge">
+              <i aria-hidden="true" />
+              {hero.badge}
+            </p>
+            <h1 id="hero-title">{hero.title}</h1>
+            <p className="hero-lede">{hero.lede}</p>
+            <div className="hero-actions">
+              <Button href={hero.ctaPrimary.href}>
+                {hero.ctaPrimary.label}
+                <ArrowUpRight size={16} />
+              </Button>
+              <Button variant="secondary" href={hero.ctaSecondary.href}>
+                {hero.ctaSecondary.label}
+                <ArrowDown size={16} />
+              </Button>
+            </div>
           </div>
-        </div>
-        <HeroPlayerCard />
+          <HeroPlayerCard />
+        </HeroStage>
       </section>
 
+      {/* Two bands, opposite directions, different speeds: identical speeds
+          read as hypnotic rather than as texture. */}
       <div className="home-marquee">
         <Marquee items={marquee.top} speed={42} />
+        <Marquee items={marquee.bottom} direction="right" speed={55} />
       </div>
 
-      <section
+      <Section
         className="home-section home-about"
         id="sobre"
-        aria-labelledby="sobre-title"
+        labelledBy="sobre-title"
       >
-        <div>
-          <p className="section-label">SOBRE ALLAN</p>
-          <h2 id="sobre-title">{sobre.title}</h2>
-        </div>
-        <div className="about-copy">
-          <p>{sobre.body}</p>
-          <strong>{sobre.highlight}</strong>
+        <SectionHeading
+          eyebrow={sobre.eyebrow}
+          title={sobre.title}
+          titleId="sobre-title"
+        />
+        <Reveal className="about-copy">
+          <Terminal abaLabel={sobre.abaLabel} prompt={sobre.prompt}>
+            <p>{sobre.body}</p>
+            <strong>{sobre.highlight}</strong>
+          </Terminal>
           <ul aria-label="Especialidades">
-            <li>TypeScript</li>
-            <li>Next.js</li>
-            <li>PostgreSQL</li>
-            <li>Docker</li>
-            <li>Linux</li>
-            <li>React Native</li>
+            {sobre.skills.map((skill) => (
+              <li key={skill}>{skill}</li>
+            ))}
           </ul>
-        </div>
-      </section>
+        </Reveal>
+      </Section>
 
-      <section
+      <Section
         className="home-section home-process"
         id="processo"
-        aria-labelledby="processo-title"
+        labelledBy="processo-title"
       >
-        <div className="section-heading">
-          <p>PROCESSO</p>
-          <h2 id="processo-title">{processo.title}</h2>
-        </div>
-        <ol>
+        <SectionHeading
+          eyebrow={processo.eyebrow}
+          title={processo.title}
+          titleId="processo-title"
+        />
+        <RevealGroup as="ol" stagger={70}>
           {processo.steps.map((step, index) => (
             <li key={step.title}>
               <span>0{index + 1}</span>
@@ -137,66 +145,49 @@ export default async function Home() {
               </div>
             </li>
           ))}
-        </ol>
-      </section>
+        </RevealGroup>
+      </Section>
 
-      <section
+      <Section
         className="home-section home-projects"
         id="projetos"
-        aria-labelledby="projetos-title"
+        labelledBy="projetos-title"
       >
-        <div className="section-heading">
-          <p>TRABALHOS RECENTES</p>
-          <h2 id="projetos-title">{projetos.title}</h2>
-          <span>{projetos.emptyText}</span>
-        </div>
-        <div className="project-grid">
-          {projects.map((project) => {
-            const draft = project.status !== "published";
-            return (
-              <article className="project-card" key={project.slug}>
-                <div className="project-cover">
-                  <Image
-                    src={project.capa.src}
-                    alt={project.capa.alt}
-                    width={960}
-                    height={540}
-                    sizes="(max-width: 767px) 100vw, 50vw"
-                  />
-                </div>
-                <div className="project-copy">
-                  <p>{project.homeTeaser?.label}</p>
-                  <h3>{project.titulo}</h3>
-                  <span>{project.resumo}</span>
-                  <ul>
-                    {project.stack.slice(0, 4).map((tech) => (
-                      <li key={tech}>{tech}</li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={draft ? "/#contato" : `/projetos/${project.slug}`}
-                  >
-                    {draft ? "PEDIR APRESENTAÇÃO" : "VER CASE"}
-                    <ArrowUpRight size={15} />
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
+        <SectionHeading
+          eyebrow={projetos.eyebrow}
+          title={projetos.title}
+          titleId="projetos-title"
+          lede={projects.length ? projetos.lede : projetos.emptyText}
+          action={
+            <Link className="section-action" href="/projetos">
+              {projetos.viewAll}
+            </Link>
+          }
+        />
+        <RevealGroup className="project-grid" stagger={80}>
+          {projects.map((project) => (
+            <ProjectCard
+              key={project.slug}
+              project={project}
+              sizes="(max-width: 767px) 100vw, 50vw"
+            />
+          ))}
+        </RevealGroup>
+      </Section>
 
-      <section
+      <Section
         className="home-section home-services"
         id="servicos"
-        aria-labelledby="servicos-title"
+        labelledBy="servicos-title"
       >
-        <div className="services-intro">
-          <p>CAPACIDADES</p>
-          <h2 id="servicos-title">{servicos.title}</h2>
-          <span>Entre pelo problema. Stack vem depois.</span>
-        </div>
-        <ul className="service-list">
+        <SectionHeading
+          className="services-intro"
+          eyebrow={servicos.eyebrow}
+          title={servicos.title}
+          titleId="servicos-title"
+          lede={servicos.lede}
+        />
+        <RevealGroup as="ul" className="service-list" stagger={55}>
           {servicos.items.map((item, index) => {
             const Icon = iconMap[item.icon];
             return (
@@ -212,18 +203,19 @@ export default async function Home() {
               </li>
             );
           })}
-        </ul>
-      </section>
+        </RevealGroup>
+      </Section>
 
-      <section
+      <Section
         className="home-section home-faq"
         id="faq"
-        aria-labelledby="faq-title"
+        labelledBy="faq-title"
       >
-        <div className="section-heading">
-          <p>FAQ</p>
-          <h2 id="faq-title">{faq.title}</h2>
-        </div>
+        <SectionHeading
+          eyebrow={faq.eyebrow}
+          title={faq.title}
+          titleId="faq-title"
+        />
         <Accordion type="single" collapsible defaultValue={faq.items[0].q}>
           {faq.items.map((item) => (
             <AccordionItem key={item.q} value={item.q} className="faq-item">
@@ -237,27 +229,40 @@ export default async function Home() {
             </AccordionItem>
           ))}
         </Accordion>
-      </section>
+      </Section>
 
-      <section
+      <Section
         className="home-section home-contact"
         id="contato"
-        aria-labelledby="contato-title"
+        labelledBy="contato-title"
       >
-        <div className="contact-copy">
-          <p>VAMOS CONSTRUIR</p>
-          <h2 id="contato-title">{contato.title}</h2>
-          <span>{contato.lede}</span>
-          <a href={`mailto:${contato.email}`}>{contato.email} ↗</a>
+        <SectionHeading
+          className="contact-copy"
+          eyebrow={contato.eyebrow}
+          title={contato.title}
+          titleId="contato-title"
+          lede={contato.lede}
+        />
+        <div className="contact-side">
+          <p className="contact-channels-label">{contato.canaisLabel}</p>
+          <ul className="contact-channels">
+            {contato.canais.map((canal) => (
+              <li key={canal.href}>
+                <a
+                  href={canal.href}
+                  {...(canal.href.startsWith("http")
+                    ? { target: "_blank", rel: "noreferrer noopener" }
+                    : {})}
+                >
+                  <span>{canal.label}</span>
+                  <strong>{canal.value}</strong>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <ContactForm />
         </div>
-        <ContactForm />
-      </section>
-      <footer className="home-footer">
-        <strong>Allan.Dev</strong>
-        <span>© {new Date().getFullYear()} Allan Carvalho</span>
-        <span>{footer.tagline}</span>
-        <Link href="/privacidade">PRIVACIDADE</Link>
-      </footer>
+      </Section>
     </main>
   );
 }

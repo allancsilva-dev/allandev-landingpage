@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <main className="legal-page">
       <Link href="/">← Allan.Dev</Link>
       <h1>Política de privacidade</h1>
-      <p>Última atualização: 10 de agosto de 2026.</p>
+      <p>Última atualização: 30 de agosto de 2026.</p>
       <h2>Dados e finalidade</h2>
       <p>
         O formulário coleta nome, e-mail, empresa opcional, tipo de projeto e
@@ -14,8 +14,15 @@ export default function PrivacyPage() {
       <h2>Operadores</h2>
       <p>
         Cloudflare protege e entrega o site. Resend processa o envio do e-mail.
-        Informações técnicas mínimas podem ser tratadas por esses fornecedores
-        conforme seus termos.
+        Para prevenir abuso, o endereço IP também é enviado ao Cloudflare
+        Turnstile durante a validação do formulário.
+      </p>
+      <h2>Segurança e retenção técnica</h2>
+      <p>
+        O limitador de envios mantém somente um identificador derivado do
+        endereço IP, sem guardar o endereço original. Ele fica em memória,
+        associado a uma janela de uma hora, e é removido durante a limpeza de
+        novos envios ou quando o serviço reinicia.
       </p>
       <h2>Retenção e direitos</h2>
       <p>
@@ -24,8 +31,7 @@ export default function PrivacyPage() {
         allan@nexostech.com.br.
       </p>
       <p>
-        Esta página é base operacional e deve receber revisão jurídica antes do
-        lançamento comercial.
+        Esta política será atualizada se o site ou seus fornecedores mudarem.
       </p>
     </main>
   );

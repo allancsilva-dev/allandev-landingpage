@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SiteFooter } from "@/components/site-footer";
 import {
   useCallback,
   useEffect,
@@ -31,7 +32,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeTimerRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -58,6 +61,32 @@ export function AppShell({ children }: { children: ReactNode }) {
       const timer = window.setTimeout(() => setSoundOn(true), 0);
       return () => window.clearTimeout(timer);
     }
+  }, []);
+
+  // Scroll spy: one observer over the sections the nav points at.
+  useEffect(() => {
+    const ids = navItems
+      .map((item) => item.href.split("#")[1])
+      .filter((id): id is string => Boolean(id));
+    // The hero is observed too, so returning to the top clears the marker
+    // instead of leaving the last section highlighted.
+    const sections = ["topo", ...ids]
+      .map((id) => document.getElementById(id))
+      .filter((element): element is HTMLElement => element !== null);
+    if (sections.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.find((entry) => entry.isIntersecting);
+        if (visible)
+          setActiveSection(
+            visible.target.id === "topo" ? null : visible.target.id,
+          );
+      },
+      { rootMargin: "-45% 0px -55% 0px" },
+    );
+    for (const section of sections) observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -100,11 +129,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     dialogRef.current?.showModal();
   }, []);
 
-  const closeMenu = useCallback(() => {
+  const closeMenu = useCallback((restoreFocus = true) => {
     setMenuOpen(false);
     closeTimerRef.current = window.setTimeout(
       () => {
         dialogRef.current?.close();
+        if (restoreFocus)
+          window.requestAnimationFrame(() => menuButtonRef.current?.focus());
         closeTimerRef.current = null;
       },
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 130,
@@ -117,7 +148,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     const syncClose = () => setMenuOpen(false);
     const animateCancel = (event: Event) => {
       event.preventDefault();
-      closeMenu();
+      closeMenu(true);
     };
     dialog.addEventListener("close", syncClose);
     dialog.addEventListener("cancel", animateCancel);
@@ -157,8 +188,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         >
           <span aria-hidden="true">A</span> Allan.Dev
         </Link>
+        <nav className="nav-desktop" aria-label="Principal">
+          {navItems.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              aria-current={
+                activeSection && item.href.endsWith(`#${activeSection}`)
+                  ? "true"
+                  : undefined
+              }
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
         <div className="arcade-header-actions">
-          <span className="arcade-player-mini">PLAYER 01</span>
           <button
             className="sound-toggle arcade-sound-toggle"
             onClick={toggleSound}
@@ -167,10 +212,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             SOM {soundOn ? "ON" : "OFF"}
           </button>
+          <Link className="nav-cta" href="/#contato">
+            FALAR COMIGO
+          </Link>
           <button
+            ref={menuButtonRef}
             className="menu-button arcade-menu-button"
             onClick={openMenu}
+            aria-haspopup="dialog"
             aria-expanded={menuOpen}
+            aria-controls="menu-principal"
           >
             MENU <span aria-hidden="true">☰</span>
           </button>
@@ -179,6 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <dialog
         ref={dialogRef}
+        id="menu-principal"
         className="mobile-menu-dialog arcade-menu-dialog"
         aria-label="Menu principal"
         data-closing={!menuOpen ? "true" : undefined}
@@ -188,22 +240,29 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="wordmark arcade-wordmark arcade-menu-wordmark"
             href="/"
             aria-label="Allan.Dev — início"
-            onClick={closeMenu}
+            onClick={() => closeMenu(false)}
           >
             <span aria-hidden="true">A</span> Allan.Dev
           </Link>
           <button
             className="close-button"
-            onClick={closeMenu}
+            onClick={() => closeMenu(true)}
             aria-label="Fechar menu"
             autoFocus
           >
             <span aria-hidden="true">✕</span>
           </button>
         </div>
-        <nav className="mobile-menu-content arcade-menu-content">
+        <nav
+          className="mobile-menu-content arcade-menu-content"
+          aria-label="Menu principal"
+        >
           {navItems.map((item) => (
-            <a key={item.href} href={item.href} onClick={closeMenu}>
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={() => closeMenu(false)}
+            >
               {item.label}
             </a>
           ))}
@@ -226,7 +285,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         </footer>
       </dialog>
 
-      <div id="main-content">{children}</div>
+      <div id="main-content" tabIndex={-1}>
+        {children}
+      </div>
+      <SiteFooter />
     </>
   );
 }

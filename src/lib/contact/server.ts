@@ -1,4 +1,5 @@
 import type { ContactInput } from "./schema";
+import { getSiteUrl } from "../site-url";
 
 const timeoutSignal = (ms: number) => AbortSignal.timeout(ms);
 
@@ -10,9 +11,7 @@ export function getClientIp(request: Request) {
 
 export function isAllowedOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  const allowedUrl = new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000",
-  );
+  const allowedUrl = getSiteUrl();
   const host =
     request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   if (process.env.APP_ENV === "production")
@@ -40,9 +39,7 @@ export async function validateTurnstile(token: string, remoteIp: string) {
     hostname?: string;
     action?: string;
   };
-  const expectedHost = new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000",
-  ).hostname;
+  const expectedHost = getSiteUrl().hostname;
   return (
     result.success === true &&
     result.hostname === expectedHost &&

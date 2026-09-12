@@ -9,16 +9,16 @@ export function Marquee({
 }) {
   const content = items.join(" · ");
   return (
-    <div
-      className="marquee marquee-double"
-      aria-label={`Tecnologias: ${content}`}
-    >
+    // Decorative on purpose: the readable stack list lives in the Sobre section,
+    // so a screen reader never has to sit through a scrolling ticker.
+    <div className="marquee" aria-hidden="true">
       <div
         className={`marquee-track marquee-${direction}`}
         style={{ animationDuration: `${speed}s` }}
       >
+        {/* Duplicated so translateX(-50%) loops without a visible seam. */}
         <span>{content}</span>
-        <span aria-hidden="true">{content}</span>
+        <span>{content}</span>
       </div>
     </div>
   );

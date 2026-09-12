@@ -2,37 +2,13 @@
 
 import Image from "next/image";
 import { LazyMotion, domAnimation, m, useReducedMotion } from "motion/react";
-import { useEffect, useState, type PointerEvent } from "react";
+import type { PointerEvent } from "react";
+import { homeContent } from "@/lib/home-content";
+
+const { identity, hud } = homeContent.hero;
 
 export function HeroPlayerCard() {
   const reduceMotion = useReducedMotion();
-  const [booting, setBooting] = useState(false);
-
-  useEffect(() => {
-    if (reduceMotion) return;
-    try {
-      if (sessionStorage.getItem("allandev-hero-boot") !== "1") {
-        const reveal = window.setTimeout(() => setBooting(true), 0);
-        const timer = window.setTimeout(() => {
-          sessionStorage.setItem("allandev-hero-boot", "1");
-          setBooting(false);
-        }, 2200);
-        return () => {
-          window.clearTimeout(reveal);
-          window.clearTimeout(timer);
-        };
-      }
-    } catch {
-      return;
-    }
-  }, [reduceMotion]);
-
-  function skipBoot() {
-    try {
-      sessionStorage.setItem("allandev-hero-boot", "1");
-    } catch {}
-    setBooting(false);
-  }
 
   function tilt(event: PointerEvent<HTMLDivElement>) {
     if (reduceMotion || matchMedia("(pointer: coarse)").matches) return;
@@ -53,8 +29,8 @@ export function HeroPlayerCard() {
   return (
     <LazyMotion features={domAnimation}>
       <m.div
-        className="player-card"
-        aria-label="Allan Carvalho, desenvolvedor full-stack e infraestrutura"
+        className="player-card pixel-corners"
+        aria-label={`${identity.name}, ${identity.line}`}
         onPointerMove={tilt}
         onPointerLeave={reset}
         initial={false}
@@ -68,27 +44,16 @@ export function HeroPlayerCard() {
             priority
             alt="Retrato em pixel art de Allan Carvalho trabalhando em um laptop"
           />
-          {booting && (
-            <div className="hero-boot" role="status" aria-live="polite">
-              <span>Allan.Dev OS</span>
-              <strong>CARREGANDO PERFIL...</strong>
-              <button type="button" onClick={skipBoot}>
-                PULAR
-              </button>
-            </div>
-          )}
         </div>
-        <strong>ALLAN CARVALHO</strong>
-        <p>Full Stack Developer · Infraestrutura</p>
+        <strong>{identity.name}</strong>
+        <p>{identity.line}</p>
         <dl>
-          <div>
-            <dt>FULL</dt>
-            <dd>Da infra à interface</dd>
-          </div>
-          <div>
-            <dt>24H</dt>
-            <dd>Retorno inicial</dd>
-          </div>
+          {hud.map((item) => (
+            <div key={item.value}>
+              <dt>{item.value}</dt>
+              <dd>{item.label}</dd>
+            </div>
+          ))}
         </dl>
       </m.div>
     </LazyMotion>

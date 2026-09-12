@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 async function startHome(page: import("@playwright/test").Page) {
   await page.goto("/");
-  const skip = page.getByRole("button", { name: "PULAR" });
+  const skip = page.getByRole("button", { name: /PRESS START/ });
   if (await skip.isVisible()) await skip.click();
 }
 
@@ -12,6 +12,30 @@ test("home carrega com H1, form e navegação", async ({ page }) => {
     "SISTEMAS QUE AGUENTAM PRODUÇÃO",
   );
   await expect(page.getByRole("form")).toBeVisible();
+});
+
+test("nav desktop aparece em 1280 e marca a seção ativa", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await startHome(page);
+  const nav = page.getByRole("navigation", { name: "Principal" });
+  await expect(nav).toBeVisible();
+  await expect(page.getByRole("button", { name: /MENU/ })).toBeHidden();
+  await expect(page.getByRole("link", { name: "FALAR COMIGO" })).toBeVisible();
+
+  await page.locator("#servicos").scrollIntoViewIfNeeded();
+  await expect(nav.getByRole("link", { name: "Serviços" })).toHaveAttribute(
+    "aria-current",
+    "true",
+  );
+});
+
+test("rodapé é landmark fora do main", async ({ page }) => {
+  await startHome(page);
+  const footer = page.getByRole("contentinfo");
+  await expect(footer).toBeVisible();
+  await expect(
+    footer.getByRole("navigation", { name: "Rodapé" }),
+  ).toBeVisible();
 });
 
 test("home tem seções completas", async ({ page }) => {
@@ -24,14 +48,24 @@ test("home tem seções completas", async ({ page }) => {
   await expect(page.locator("#contato")).toBeVisible();
 });
 
-test("home exibe teasers privados sem publicar os cases", async ({ page }) => {
+test("home lista os cases publicados e leva à página de cada um", async ({
+  page,
+}) => {
   await startHome(page);
-  await expect(page.getByText("Nexos ERP", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nexos ERP" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Renowa" })).toBeVisible();
-  await expect(page.getByText("PEDIR APRESENTAÇÃO")).toHaveCount(2);
-  await expect(page.locator(".arcade-project-select")).toHaveCount(0);
 
-  await page.goto("/projetos/nexos-erp");
+  // A published case links to its own route; a draft would fall back to
+  // `/#contato`, because generateStaticParams never emits it.
+  const teaserLinks = page.locator(".project-card a");
+  await expect(teaserLinks).toHaveCount(2);
+  expect(
+    await teaserLinks.evaluateAll((links) =>
+      links.map((link) => link.getAttribute("href")),
+    ),
+  ).toEqual(["/projetos/nexos-erp", "/projetos/renowa"]);
+
+  await page.goto("/projetos/nao-existe");
   await expect(page.getByText("ERRO 404")).toBeVisible();
 });
 
@@ -42,7 +76,7 @@ test("conteúdo principal permanece disponível sem JavaScript", async ({
   const page = await context.newPage();
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.getByText("Nexos ERP", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Nexos ERP" })).toBeVisible();
   await context.close();
 });
 
@@ -66,6 +100,7 @@ test("menu abre com nova anatomia e restaura o foco ao fechar", async ({
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("navigation").getByRole("link")).toHaveText([
     "Projetos",
+    "Código",
     "Sobre",
     "Processo",
     "Serviços",
@@ -86,6 +121,9 @@ test("menu abre com nova anatomia e restaura o foco ao fechar", async ({
 });
 
 test("menu fecha com Escape e ao escolher um destino", async ({ page }) => {
+  // Below 1024px the overlay *is* the navigation; above it the desktop nav
+  // takes over and the MENU button is intentionally gone.
+  await page.setViewportSize({ width: 480, height: 800 });
   await startHome(page);
   const menuBtn = page.getByRole("button", { name: /MENU/ });
   await menuBtn.click();
@@ -125,21 +163,54 @@ test("preferência de movimento reduzido mantém entrada estática", async ({
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "PULAR" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /PRESS START/ })).toHaveCount(
+    0,
+  );
   await expect(page.locator('[aria-label="Ligar som"]')).toHaveAttribute(
     "aria-pressed",
     "false",
   );
+  // Nothing may be hidden waiting for a scroll that reduced motion suppresses.
+  await expect(page.locator('[data-reveal="pending"]')).toHaveCount(0);
+  await expect(page.locator("#faq h2")).toBeVisible();
+});
+
+test("reveal esconde só o que está abaixo da dobra e revela ao rolar", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const skip = page.getByRole("button", { name: /PRESS START/ });
+  if (await skip.isVisible()) await skip.click();
+
+  // Retries until hydration has run, then checks what it chose to hide.
+  await expect(page.locator('[data-reveal="pending"]').first()).toBeAttached();
+  // The hero is on screen at load, so it must never be in the hidden state.
+  await expect(page.locator(".home-hero [data-reveal]")).toHaveCount(0);
+
+  const faqHeading = page.locator("#faq .section-heading");
+  await faqHeading.scrollIntoViewIfNeeded();
+  await expect(faqHeading).toHaveAttribute("data-reveal", "in");
+  await expect(faqHeading).toHaveCSS("opacity", "1");
+});
+
+test("HTML servido não esconde conteúdo esperando animação", async ({
+  request,
+}) => {
+  const html = await (await request.get("/")).text();
+  expect(html).not.toContain("data-reveal");
+  expect(html).not.toContain("opacity:0");
 });
 
 test("boot do hero aparece só uma vez por sessão e pode ser pulado", async ({
   page,
 }) => {
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "PULAR" })).toBeVisible();
-  await page.getByRole("button", { name: "PULAR" }).click();
+  await expect(page.getByRole("button", { name: /PRESS START/ })).toBeVisible();
+  await page.getByRole("button", { name: /PRESS START/ }).click();
   await page.reload();
-  await expect(page.getByRole("button", { name: "PULAR" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /PRESS START/ })).toHaveCount(
+    0,
+  );
 });
 
 test("rotas públicas e erro", async ({ page }) => {
@@ -156,8 +227,21 @@ test("design system page carrega", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Design System",
   );
-  await expect(page.getByText("18.1:1")).toBeVisible();
   await expect(page.getByText("Paleta")).toBeVisible();
+  // Every listed pair must report a passing ratio, whatever the numbers are.
+  await expect(page.locator(".ds-ratio-fail")).toHaveCount(0);
+  expect(await page.locator(".ds-ratio-pass").count()).toBeGreaterThan(0);
+});
+
+test("privacidade publica apenas texto destinado ao visitante", async ({
+  page,
+}) => {
+  await page.goto("/privacidade");
+  await expect(
+    page.getByRole("heading", { name: "Política de privacidade" }),
+  ).toBeVisible();
+  await expect(page.getByText(/identificador derivado/)).toBeVisible();
+  await expect(page.getByText(/revisão jurídica/i)).toHaveCount(0);
 });
 
 test("healthcheck não vaza detalhes", async ({ request }) => {
@@ -165,7 +249,9 @@ test("healthcheck não vaza detalhes", async ({ request }) => {
   expect(await response.json()).toEqual({ status: "ok" });
 });
 
-test("projetos page mostra estado vazio", async ({ page }) => {
+test("projetos page lista os cases publicados", async ({ page }) => {
   await page.goto("/projetos");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("PROJETOS");
+  await expect(page.locator(".project-card")).toHaveCount(4);
+  await expect(page.locator(".empty-projects")).toHaveCount(0);
 });

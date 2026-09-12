@@ -1,8 +1,10 @@
+const EMAIL = "allan@nexostech.com.br";
+
 export const homeContent = {
   hero: {
     badge: "DISPONÍVEL PARA PROJETOS",
     title: "SISTEMAS QUE AGUENTAM PRODUÇÃO",
-    lede: "Desenvolvimento web, mobile e integrações por quem também administra servidor, banco e rede. Da infraestrutura à interface — com código limpo e entrega que não quebra na segunda semana.",
+    lede: "Desenvolvimento web, mobile e integrações por quem também administra servidores, bancos de dados e redes. Da infraestrutura à interface, com decisões pensadas para desempenho, operação e manutenção.",
     ctaPrimary: { label: "SOLICITAR PROPOSTA", href: "#contato" },
     ctaSecondary: { label: "VER PROJETOS", href: "#projetos" },
     identity: {
@@ -49,13 +51,21 @@ export const homeContent = {
     ],
   },
   sobre: {
-    eyebrow: "SOBRE",
+    eyebrow: "SOBRE ALLAN",
     title: "INFRAESTRUTURA E CÓDIGO NA MESMA CABEÇA",
-    abaLable: "sobre.md",
+    abaLabel: "sobre.md",
     prompt: "allan@allandev:~$ cat sobre.md",
+    skills: [
+      "TypeScript",
+      "Next.js",
+      "PostgreSQL",
+      "Docker",
+      "Linux",
+      "React Native",
+    ],
     body: "Administro servidores, bancos e redes há anos — e desenvolvo os sistemas que rodam neles. Isso muda o tipo de decisão que eu tomo: escolho arquitetura pensando em quem vai operar depois, porque normalmente sou eu. Trabalho com TypeScript, Next.js, React Native e PostgreSQL, com atenção fixa em performance, resiliência e manutenção.",
     highlight:
-      "✓ 6 princípios não-negociáveis: performance, escalabilidade, UX, resiliência, memory safe, network safe",
+      "✓ 6 princípios não negociáveis: desempenho, escalabilidade, experiência, resiliência, uso eficiente de memória e tolerância a falhas de rede",
   },
   processo: {
     eyebrow: "PROCESSO",
@@ -81,14 +91,16 @@ export const homeContent = {
   projetos: {
     eyebrow: "PROJETOS",
     title: "EVIDÊNCIA ANTES DE PROMESSA",
-    lede: "Cases publicados mostram problema, arquitetura, decisões e resultado.",
+    lede: "Cada case abre problema, arquitetura, decisões e resultado.",
     emptyLabel: "CASES / EM PREPARAÇÃO",
     emptyText: "Nexos ERP e Renowa estão sendo documentados para publicação.",
+    emptyBody: "Cases em revisão. Nenhum projeto publicado ainda.",
     viewAll: "VER TODOS →",
   },
   servicos: {
-    eyebrow: "SERVIÇOS",
+    eyebrow: "CAPACIDADES",
     title: "O QUE VOCÊ PODE CONTRATAR",
+    lede: "Entre pelo problema. Stack vem depois.",
     items: [
       {
         title: "APLICAÇÕES WEB",
@@ -138,7 +150,7 @@ export const homeContent = {
       },
       {
         q: "QUAL O PRAZO MÉDIO?",
-        a: "Uma landing page fica entre 1 e 3 semanas. Um sistema web com backend, entre 6 e 12. Aplicativo mobile, entre 8 e 16. São faixas honestas, não promessas — o prazo real sai na análise inicial.",
+        a: "Uma landing page fica entre 3 dias e 1 semana. Um sistema web com backend, entre 3 e 6 semanas. Aplicativo mobile, entre 4 e 8 semanas. São faixas honestas, não promessas — o prazo real sai na análise inicial.",
       },
       {
         q: "VOCÊ TRABALHA COM SISTEMA QUE JÁ EXISTE?",
@@ -151,11 +163,31 @@ export const homeContent = {
     ] as const,
   },
   contato: {
+    eyebrow: "CONTATO",
     title: "QUAL PROBLEMA PRECISA SAIR DO CAMINHO?",
     lede: "Conte o contexto. Respondo com próximos passos objetivos, sem reunião de descoberta disfarçada de venda.",
-    email: "allan@nexostech.com.br",
+    email: EMAIL,
+    canaisLabel: "ME ENCONTRE POR AQUI",
+    // S11 also asks for LinkedIn and WhatsApp; both are pending real values
+    // (commit 05701fb removed a placeholder WhatsApp number on purpose).
+    canais: [
+      { label: "E-mail", value: EMAIL, href: `mailto:${EMAIL}` },
+      {
+        label: "GitHub",
+        value: "github.com/allancsilva-dev",
+        href: "https://github.com/allancsilva-dev",
+      },
+    ],
   },
   footer: {
     tagline: "Next.js · servidor próprio",
+    navLabel: "Rodapé",
+    nav: [
+      { label: "SOBRE", href: "/#sobre" },
+      { label: "PROJETOS", href: "/projetos" },
+      { label: "SERVIÇOS", href: "/#servicos" },
+      { label: "CONTATO", href: "/#contato" },
+      { label: "PRIVACIDADE", href: "/privacidade" },
+    ],
   },
 } as const;

@@ -1,19 +1,19 @@
 import type { ReactNode } from "react";
 
 export function Terminal({
-  abaLable,
+  abaLabel,
   prompt,
   children,
 }: {
-  abaLable?: string;
+  abaLabel?: string;
   prompt?: string;
   children: ReactNode;
 }) {
   return (
     <div className="terminal-frame">
-      {(abaLable || prompt) && (
+      {(abaLabel || prompt) && (
         <div className="terminal-bar" aria-hidden="true">
-          {abaLable && <span className="terminal-tab">{abaLable}</span>}
+          {abaLabel && <span className="terminal-tab">{abaLabel}</span>}
         </div>
       )}
       {prompt && (

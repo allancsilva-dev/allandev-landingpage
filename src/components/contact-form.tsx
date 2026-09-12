@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import Script from "next/script";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { homeContent } from "@/lib/home-content";
 
 type Status = "idle" | "sending" | "success" | "error";
 
@@ -9,13 +10,22 @@ export function ContactForm() {
   const turnstileKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
+  const [timedOut, setTimedOut] = useState(false);
+  const controllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => () => controllerRef.current?.abort(), []);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Captured before the first await: React clears currentTarget once the
+    // handler returns, so reading it later throws and hides a real success.
+    const formElement = event.currentTarget;
     setStatus("sending");
     setMessage("");
-    const form = new FormData(event.currentTarget);
+    setTimedOut(false);
+    const form = new FormData(formElement);
     const controller = new AbortController();
+    controllerRef.current = controller;
     const timeout = window.setTimeout(() => controller.abort(), 10_000);
     const payload = {
       nome: form.get("nome"),
@@ -36,17 +46,19 @@ export function ContactForm() {
         signal: controller.signal,
       });
       if (!response.ok) throw new Error("send failed");
-      event.currentTarget.reset();
+      formElement.reset();
       setStatus("success");
       setMessage("Mensagem enviada. Retorno em até 24 horas.");
-    } catch {
+    } catch (error) {
       if ("turnstile" in window)
         (
           window as Window & { turnstile?: { reset: () => void } }
         ).turnstile?.reset();
+      setTimedOut(error instanceof DOMException && error.name === "AbortError");
       setStatus("error");
     } finally {
       window.clearTimeout(timeout);
+      controllerRef.current = null;
     }
   }
 
@@ -177,9 +189,14 @@ export function ContactForm() {
       {status === "error" && (
         <div className="form-message error" role="alert">
           <p>
-            Não consegui enviar agora. Seus dados continuam no formulário. Tente
-            novamente ou escreva para{" "}
-            <a href="mailto:allan@nexostech.com.br">allan@nexostech.com.br</a>.
+            {timedOut
+              ? "O envio passou de 10 segundos e foi interrompido."
+              : "Não consegui enviar agora."}{" "}
+            Seus dados continuam no formulário. Tente novamente ou escreva para{" "}
+            <a href={`mailto:${homeContent.contato.email}`}>
+              {homeContent.contato.email}
+            </a>
+            .
           </p>
         </div>
       )}

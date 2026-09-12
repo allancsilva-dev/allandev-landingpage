@@ -6,8 +6,9 @@ import "@fontsource/press-start-2p/400.css";
 import "./globals.css";
 import "./arcade.css";
 import { AppShell } from "@/components/app-shell";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000";
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s — Allan.Dev",
   },
   description:
-    "Infraestrutura, sistemas web, mobile e integrações construídos com critério de produção. Da infraestrutura à interface — com código limpo e entrega que não quebra na segunda semana.",
+    "Infraestrutura, sistemas web, mobile e integrações construídos com decisões pensadas para desempenho, operação e manutenção.",
   applicationName: "Allan.Dev",
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
@@ -27,6 +28,7 @@ export const metadata: Metadata = {
         type: "image/svg+xml",
       },
     ],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
   },
   openGraph: {
     type: "website",
@@ -48,7 +50,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" data-scroll-behavior="smooth">
       <body>
         <AppShell>{children}</AppShell>
       </body>

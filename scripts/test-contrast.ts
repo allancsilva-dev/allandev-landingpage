@@ -1,6 +1,19 @@
+import { readFileSync } from "node:fs";
 import { wcagContrast, formatCss } from "culori";
 
 type TokenPair = { name: string; fg: string; bg: string };
+
+// Read the tokens from the stylesheet instead of restating them here: a copy
+// would keep this gate passing against colors the app no longer uses.
+function readTokens(path: string): Record<string, string> {
+  const css = readFileSync(path, "utf8");
+  const tokens: Record<string, string> = {};
+  for (const match of css.matchAll(
+    /(--allan-[a-z-]+)\s*:\s*(oklch\([^)]+\))\s*;/g,
+  ))
+    tokens[`var(${match[1]})`] = match[2]!;
+  return tokens;
+}
 
 function parseOklch(raw: string): { l: number; c: number; h: number } | null {
   const m = raw.match(/oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
@@ -53,19 +66,15 @@ const pairs: TokenPair[] = [
   },
 ];
 
-const raw: Record<string, string> = {
-  "var(--allan-ink)": "oklch(0.96 0.02 240)",
-  "var(--allan-ink-muted)": "oklch(0.78 0.055 245)",
-  "var(--allan-bg-void)": "oklch(0.075 0.035 270)",
-  "var(--allan-bg-surface)": "oklch(0.13 0.055 270)",
-  "var(--allan-bg-elevated)": "oklch(0.19 0.085 270)",
-  "var(--allan-cyan)": "oklch(0.82 0.18 205)",
-  "var(--allan-blue)": "oklch(0.67 0.23 258)",
-  "var(--allan-violet)": "oklch(0.66 0.26 300)",
-  "var(--allan-magenta)": "oklch(0.72 0.26 335)",
-  "var(--allan-success)": "oklch(0.76 0.17 150)",
-  "var(--allan-danger)": "oklch(0.68 0.2 25)",
-};
+const raw = readTokens("src/app/globals.css");
+
+const missing = [...new Set(pairs.flatMap((p) => [p.fg, p.bg]))].filter(
+  (token) => !raw[token],
+);
+if (missing.length > 0) {
+  console.error(`Tokens ausentes em globals.css: ${missing.join(", ")}`);
+  process.exit(1);
+}
 
 const MIN_NORMAL = 4.5;
 const MIN_LARGE = 3;

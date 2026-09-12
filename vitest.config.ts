@@ -4,7 +4,6 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/unit/**/*.test.ts"],
-    coverage: { reporter: ["text", "json"] },
   },
   resolve: { alias: { "@": new URL("./src", import.meta.url).pathname } },
 });

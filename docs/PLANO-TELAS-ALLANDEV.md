@@ -124,31 +124,40 @@ S12 Rodape
 
 ---
 
-## S2 — Preloader / sequencia de boot
+## S2 — Boot do hero
 
-**Fase:** 2
+**Fase:** 2 · **Implementado em** `src/components/hero-stage.tsx`
 
-**Objetivo:** estabelecer a estetica "jogo bootando" nos primeiros dois segundos. E a coisa mais memoravel do site e tambem o maior risco de UX do projeto.
+> **Correcao (2026-08-12):** esta tela pedia overlay full-screen com contador `0% → 100%` e teto de
+> 1,2s, o que contradiz `DESIGN.md` ("boot curto dentro do hero", teto de 2,5s, "sem progresso falso").
+> `DESIGN.md` venceu: um contador sobre pagina estatica seria progresso ficticio. O texto abaixo
+> descreve o que existe no codigo.
+
+**Objetivo:** estabelecer a estetica "jogo bootando" nos primeiros dois segundos, sem atrasar leitura.
 
 **Anatomia:**
-1. Overlay full-screen, `--allan-bg-void`
-2. Logo `ALLANDEV` com efeito de glitch sutil
-3. Texto `CARREGANDO ASSETS...` em mono
-4. Barra de progresso pixelada
-5. Contador `0%` → `100%`
+1. Camada sobre o hero inteiro (nao full-screen), quase opaca
+2. Marca `ALLAN.DEV OS` em display pixelado
+3. Status curto em mono, trocando a cada 620ms: `MONTANDO AMBIENTE` → `ABRINDO CONEXOES` → `PRONTO`
+4. Barra pixelada de 6px animada por CSS (`scaleX`), sem numero de porcentagem
+5. Botao `▸ PRESS START`, que encerra o boot na hora
 
 **Comportamento:**
-- Sem barra que finja progresso. Sequencia curta de inicializacao visual independente da rede.
-- **Duracao maxima de 1,2s.** Passou disso, encerra imediatamente.
-- Fade-out de 400ms revelando o hero, que entra com stagger.
-- **So aparece na primeira visita da sessao.** Flag em `sessionStorage`; navegacao interna nao reboota.
-- `prefers-reduced-motion: reduce` → sem glitch, sem contador animado, fade simples de 150ms.
+- Duracao total de 1,86s (3 × 620ms), abaixo do teto de 2,5s do `DESIGN.md`.
+- **Sem contador e sem barra rotulada como carregamento**: a pagina e estatica, entao progresso seria
+  ficcao. A barra e ornamento temporal, nao medicao.
+- **So na primeira visita da sessao.** Flag em `sessionStorage`; navegacao interna nao reboota.
+- `prefers-reduced-motion: reduce` → a camada nunca e montada.
+- O hero fica no DOM e no HTML servido por baixo da camada, com `inert`, entao a imagem LCP carrega
+  em paralelo e o conteudo existe sem JavaScript.
 
-**Estados:** carregando / timeout atingido / ja visto nesta sessao (nao renderiza).
+**Estados:** bootando / encerrado por tempo / encerrado por `PRESS START` / ja visto na sessao / reduced motion.
 
-**Acessibilidade:** `role="status"` + `aria-live="polite"` no contador; overlay com `aria-busy="true"`; conteudo da pagina presente no DOM por baixo (nao bloquear indexacao nem leitor de tela).
+**Acessibilidade:** `role="status"` + `aria-live="polite"` + `aria-busy="true"` na camada; hero coberto
+recebe `inert` em vez de `display: none`, preservando indexacao e leitor de tela.
 
-**Aceite:** bloquear um asset no DevTools → boot ainda sai em ≤ 1,2s. Segunda navegacao na mesma aba nao mostra preloader.
+**Aceite:** boot sai em ≤ 2,5s; segunda navegacao na mesma aba nao reboota; `curl` da home mostra o
+`<h1>` e o paragrafo do hero mesmo durante o boot; teste e2e cobre sessao unica e `PRESS START`.
 
 ---
 
@@ -184,14 +193,19 @@ S12 Rodape
 > O H1 e o ponto onde seu posicionamento se separa da referencia. Ela vende "dev full stack"; voce vende "dev que tambem e infra" — que e raro, verificavel pelo seu historico e vale mais para cliente com sistema em producao. Nao abra mao disso.
 
 **Comportamento:**
-- Entrada com stagger de 80ms entre os elementos, apos o fade do preloader.
-- Ponto do badge pulsa (CSS `@keyframes`, nao JS).
-- Overlay CRT sutil (scanlines) sobre a imagem, em `::after`, `pointer-events: none`.
-- Parallax leve na imagem ao scroll — **desabilitado** em `prefers-reduced-motion` e em telas `< md`.
+- Ponto do badge: cor solida com glow (CSS). Pulso animado ainda **nao** implementado.
+- Overlay CRT (scanlines) sobre o retrato e sobre a midia de projeto, em `::after`,
+  `pointer-events: none` — **implementado**. Nunca sobre corpo de texto: `pnpm test:contrast` nao
+  modela overlay e o risco de AA nao seria medido.
+- Pixel corners no card de identidade e nos cards de projeto, visiveis em `:hover`/`:focus-within`.
+- Tilt 3D leve no card de identidade, desligado em `pointer: coarse` e em reduced motion.
+- Parallax na imagem ao scroll: **nao** implementado (fora de escopo).
 
 **Responsividade:**
 - `base–md`: coluna unica. Ordem: badge → H1 → paragrafo → CTAs → imagem → HUDs. H1 em `clamp(2rem, 9vw, 3.5rem)`. CTAs empilhados, largura total.
-- `lg+`: grid 2 colunas (7fr / 5fr). HUDs sobrepostos nos cantos da imagem. H1 ate `4.5rem`.
+- `lg+`: grid 2 colunas **1.2fr / 0.9fr** (valor do `DESIGN.md` e do codigo; a versao anterior desta
+  linha dizia 7fr/5fr e nunca foi implementada). HUDs dentro do card de identidade, nao sobrepostos.
+  H1 ate `2.15rem` — Press Start 2P ocupa muito mais largura por caractere que uma sans.
 
 **Acessibilidade:** um `<h1>` so na pagina. Imagem com `alt` descritivo. CTAs sao `<a>`, nao `<button>` — navegam. Contraste do texto do badge verificado contra o fundo do badge, nao contra o fundo da pagina (erro comum).
 
@@ -217,7 +231,9 @@ S12 Rodape
 - `prefers-reduced-motion: reduce` → animacao parada, faixa vira lista estatica.
 - `will-change: transform` so nas duas faixas, nunca herdado.
 
-**Acessibilidade:** `aria-hidden="true"` no conteudo duplicado; a faixa real tem `role="list"`. Alternativa: marcar a secao inteira como decorativa e garantir que a stack apareca em texto na secao Sobre (recomendado — e mais simples e igualmente honesto).
+**Acessibilidade:** **decisao tomada — a faixa inteira e decorativa** (`aria-hidden="true"` em cada
+faixa). A stack legivel vive nos chips da secao Sobre, que saem de `sobre.skills`. Velocidades reais:
+42s na faixa de cima (esquerda) e 55s na de baixo (direita).
 
 **Responsividade:** altura reduzida em `base–sm`; fonte menor; velocidade proporcional para a percepcao nao mudar.
 
@@ -419,7 +435,7 @@ S12 Rodape
 | Pergunta | Resposta |
 |---|---|
 | `QUANTO CUSTA UM PROJETO?` | Depende do escopo, e eu nao trabalho com tabela fixa porque ela sempre erra para algum dos dois lados. A analise inicial e gratuita e devolve uma faixa de valor com as premissas explicitas — se o escopo mudar, o valor muda junto e voce sabe por que. |
-| `QUAL O PRAZO MEDIO?` | Uma landing page fica entre 1 e 3 semanas. Um sistema web com backend, entre 6 e 12. Aplicativo mobile, entre 8 e 16. Sao faixas honestas, nao promessas — o prazo real sai na analise inicial. |
+| `QUAL O PRAZO MEDIO?` | Uma landing page fica entre 3 dias e 1 semana. Um sistema web com backend, entre 3 e 6 semanas. Aplicativo mobile, entre 4 e 8 semanas. Sao faixas honestas, nao promessas — o prazo real sai na analise inicial. |
 | `VOCE TRABALHA COM SISTEMA QUE JA EXISTE?` | Sim, e e boa parte do que eu faco. Assumo manutencao, correcao de performance, migracao de banco e melhoria de sistema legado — inclusive quando a documentacao nao existe. |
 | `COMO FUNCIONA O SUPORTE DEPOIS DA ENTREGA?` | O projeto e entregue documentado, com runbook de operacao. Suporte corretivo por periodo combinado entra no contrato; manutencao continua e acordo a parte. |
 
@@ -587,8 +603,8 @@ Nenhuma cor eletrica vira texto corrido antes do teste WCAG. Gradientes podem il
 | 3 — Conteúdo | S14 mínima e 404 para não publicados | ✅ Schema, `generateStaticParams`, draft/archived = 404 |
 | 4 — Home | S3, S4, S5, S6, S7, S9, S10, S13 | ✅ Todas implementadas |
 | 5 — Template de projeto | S14 completa | ✅ HUD, TOC, MDX components, OG image, prev/next |
-| 6 — Vitrine de código | S8 | ❌ Bloqueado (token GitHub) |
-| 7 — Mídia | Vídeo em S7 e S14, galeria em S14 | 🟡 Schema e script encoder prontos; sem assets reais |
+| 6 — Vitrine de código | S8 | ✅ Manifesto + `pnpm code-shots` lendo os repos locais por `git show <SHA>` |
+| 7 — Mídia | Vídeo em S7 e S14, galeria em S14 | 🟡 Play no card, galeria com lightbox e placeholders prontos; sem assets reais |
 | 8 — Contato | S11, `/privacidade` | ✅ Form, rate limit, Turnstile, LGPD; sem envio real |
 | 9 — SEO/A11y | JSON-LD S10, OG S14, auditoria | 🟡 JSON-LD e OG ok; sem Lighthouse prod |
 
@@ -603,7 +619,7 @@ Nenhuma cor eletrica vira texto corrido antes do teste WCAG. Gradientes podem il
 | S5 Sobre | `#sobre` | ✅ Terminal frame, cursor blink, prompt, highlight |
 | S6 Processo | `#processo` | ✅ 3 steps numerados em `<ol>` |
 | S7 Projetos destaque | `#projetos` | ✅ Grid de cards + estado vazio; dados do MDX |
-| S8 Vitrine código | `#codigo` | ❌ Bloqueado |
+| S8 Vitrine código | `#codigo` | ✅ Abas ARIA, painel com moldura de terminal e zoom por teclado |
 | S9 Serviços | `#servicos` | ✅ 6 cards com ícones Lucide |
 | S10 FAQ | `#faq` | ✅ Radix Accordion, 4 itens, JSON-LD FAQPage |
 | S11 Contato | `#contato` | ✅ Form, Turnstile, honeypot, rate limit, LGPD, alt channel |

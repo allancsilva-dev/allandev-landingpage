@@ -35,7 +35,7 @@ Allan/Allan.Dev é a marca principal. Nexos Tech aparece como empresa fundada ou
 
 ## Referencias e anti-referencias
 
-- Muniz: referência estrutural da home — container, ordem, ritmo, proporções do hero, grade de projetos, menu e motion. Replicar essa anatomia com alta fidelidade, usando exclusivamente conteúdo, marca, cores e assets AllanDev. Não copiar textos, marca, personagens ou assets Muniz.
+- Muniz: referência de **vocabulário e ritmo**, não de composição. Herdamos container (1200px / 40px), ritmo vertical (~120px), tipografia display em pixel, marquee duplo, boot, terminal, reveal on scroll e menu overlay. **A composição é própria**: duas colunas editoriais com fios hairline, não a grade de cards centralizada da referência. Conteúdo, marca, cores e assets são exclusivamente AllanDev; textos, marca, personagens e assets Muniz nunca entram — inclusive títulos de seção (a referência usa "TRABALHOS RECENTES"; aqui o rótulo é `PROJETOS`).
 - Logo Nexos Tech em `docs/ChatGPT Image 7 de mar. de 2026, 20_06_40.png`: fonte oficial de azul, ciano, violeta e magenta.
 - Evitar portfolio corporativo que pareca ser da Nexos Tech.
 - Evitar template SaaS generico, glassmorphism decorativo, gradient text, grades interminaveis de cards e efeitos que escondam conteudo.

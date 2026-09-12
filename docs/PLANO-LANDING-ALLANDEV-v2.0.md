@@ -439,6 +439,30 @@ O manifesto aponta para origem privada e o CI resolve. Nao existe botao de copia
 
 **Commit:** `feat(code-shots): gerar imagens de codigo privado no CI`
 
+#### Implementado (2026-08-25) — origem local em vez de GitHub API
+
+A fonte dos fragmentos passou a ser o **repositorio local** em `~/Projetos`, lido
+por `git show <SHA>:<arquivo>`, em vez da GitHub API. O congelamento e o mesmo
+(SHA de commit + `expectedHash`), sem token, sem rede e sem segredo no CI. As
+garantias de curadoria, corte de build e ausencia de fonte no bundle nao mudam.
+
+Fluxo para publicar um trecho novo:
+
+1. adicionar a entrada em `content/code-shots.json` — `sourceRepo` (pasta em
+   `CODE_SHOTS_ROOT`, padrao `~/Projetos`), `path`, `ref` (SHA de 40 hex),
+   `region` **ou** `linhas`, `language`, `titulo` e `descricao`;
+2. rodar `pnpm code-shots --update-hashes` para gravar o `expectedHash` inicial;
+3. revisar o PNG em `public/code-shots/` antes de commitar — a revisao de
+   segredo e propriedade intelectual e manual, por construcao;
+4. referenciar o `id` no frontmatter (`codeShots`) e no corpo do MDX
+   (`<CodeShot id="..." />`).
+
+O CI nao regenera nada: `pnpm validate:content` confere que todo `id` do
+manifesto tem raster e que `expectedHash` bate com o `sourceHash` gravado em
+`content/code-shots.generated.json`. Manifesto editado sem regenerar derruba o
+build. `scripts/check-secrets.sh` procura identificadores-sentinela dos repos
+privados em `.next/` e `public/` e falha se encontrar fonte textual.
+
 ---
 
 ### Fase 7 — Midia
@@ -593,20 +617,25 @@ Resolvidas nesta versao: hospedagem (VPS propria), estrategia de lancamento (lin
 
 ---
 
-## 11. Status da implementação (atualizado 2026-08-10)
+## 11. Status da implementação (atualizado 2026-08-12)
+
+> **Correção de rota (2026-08-12):** a versão anterior desta seção marcava as fases 2 e 4 como
+> concluídas listando preloader, marquee duplo e terminal no Sobre. Os commits `ba70a53` / `dcfb611` /
+> `f3f26f8` haviam removido essas peças da home ao trocar a composição, sem atualizar o documento.
+> A tabela abaixo reflete a árvore real.
 
 | Fase | Nome | Status | Commits | Pendências |
 |---|---|---|---|---|
 | 0 | Fundação, infra e pipeline | ✅ Concluída | `b481cfc` | — |
 | 1 | Design system e tokens | ✅ Concluída | `3c5e08f` | — |
-| 2 | Shell (preloader, nav, menu, skip-link, 404/500) | ✅ Concluída | `3c5e08f` | — |
+| 2 | Shell (boot no hero, nav desktop + overlay, skip-link, rodapé, 404/500) | ✅ Concluída | `3c5e08f`, Fase 1-8 desta rodada | — |
 | 3 | Camada de conteúdo e controle de páginas | ✅ Concluída | `3c5e08f` | — |
-| 4 | Home completa | ✅ Concluída | `3c5e08f` | — |
+| 4 | Home completa | 🟡 Parcial | `3c5e08f`, Fase 1-8 desta rodada | Processo em 3 cards + linha conectora (S6); vitrine de código é fase 6 |
 | 5 | Template de página de projeto | ✅ Concluída | `4caa303` | — |
 | 6 | Imagens de código curado | ❌ Pendente | — | Token GitHub fine-grained para repo privado |
 | 7 | Mídia (vídeo, galeria, cache) | 🟡 Parcial | `83ca11e` | Assets reais de Nexos ERP e Renowa; encoder ffmpeg validado no CI |
-| 8 | Contato (envio real, anti-spam, LGPD) | 🟡 Parcial | `3c5e08f`, `83ca11e` | Teste real com Resend (sem chaves); número WhatsApp real no fallback |
-| 9 | SEO, acessibilidade e performance | 🟡 Parcial | `4caa303` | Lighthouse em produção; WCAG screen-reader; Core Web Vitals reais |
+| 8 | Contato (envio real, anti-spam, LGPD) | 🟡 Parcial | `3c5e08f`, `83ca11e` | Teste real com Resend (sem chaves); LinkedIn e WhatsApp reais nos canais; validação Zod no cliente + resumo de erros + contador (S11) |
+| 9 | SEO, acessibilidade e performance | 🟡 Parcial | `4caa303` | Lighthouse em produção; WCAG screen-reader; Core Web Vitals reais; CSP ainda é `Report-Only` sem endpoint |
 | 10 | Lançamento (VPS, smoke tests, runbook) | ❌ Pendente | — | Deploy em VPS Hostinger; Cloudflare Analytics; Sentry; rollback real |
 
 ### Workstream C — Conteúdo
@@ -623,22 +652,26 @@ Resolvidas nesta versao: hospedagem (VPS propria), estrategia de lancamento (lin
 |---|---|
 | UI primitives | `Button`, `Terminal`, `Badge`, `HUDCard`, `Marquee`, `Section`, `SectionHeading` |
 | MDX components | `Gallery`, `VideoPlayer`, `Callout` (info/warning/tip), `Architecture`, `DecisionsTable`, `Metrics` |
-| Shell | Preloader (1.2s max, só 1ª visita), skip-link, header scroll-aware, menu mobile `<dialog>`, sound toggle |
-| Home | Hero (badge + HUD cards + cabinet 3D), marquee duplo CSS, Sobre (terminal frame), Processo (3 steps), Projetos (grid + estado vazio), Serviços (6 cards Lucide), FAQ (Radix Accordion), Contato, Footer |
+| Shell | Boot no hero (1,86s, só 1ª visita, `PRESS START`), skip-link focável, header scroll-aware, nav desktop ≥1024px com scroll-spy, menu overlay `<dialog>` <1024px, sound toggle em todas as larguras, rodapé `contentinfo` fora do `<main>` |
+| Home | Hero (badge + card de identidade com tilt, HUD e pixel corners), marquee duplo CSS em direções opostas (42s/55s), Sobre em moldura de terminal, Processo (3 passos em lista editorial), Projetos (card clicável por inteiro + badge de status + chips 3+N + `VER TODOS`), Serviços (6 itens Lucide), FAQ (Radix Accordion), Contato (canais + formulário), reveal on scroll com failsafe |
 | Projeto | HUD metadados, TOC automático (headings), capa `next/image priority`, navegação prev/next, OG image dinâmica |
-| Contato | Zod (cliente + servidor), Turnstile, honeypot, rate limit (memória, pronto para Redis), consentimento LGPD, canal alternativo no erro |
+| Contato | Zod (servidor; cliente ainda por atributo HTML), Turnstile, honeypot, rate limit (memória, pronto para Redis), consentimento LGPD, canal alternativo no erro |
 | SEO | JSON-LD `Person` + `FAQPage`, sitemap, robots, metadata por rota, canonical, `opengraph-image.tsx` por projeto |
 | Infra | Docker multi-stage, compose com healthcheck, volume para cache de imagens, `next/image` com `sizes`, `output: standalone` |
-| Qualidade | ESLint (0 warnings), Prettier, TypeScript strict, 6 unit tests, 16 E2E tests (chromium + mobile), `validate:content`, `test:contrast` (8 pares WCAG AA), 0 vulnerabilidades `pnpm audit --prod` |
+| Qualidade | ESLint (0 warnings), Prettier, TypeScript strict, 10 unit tests, 22 E2E tests × 2 projetos (chromium + mobile, ambos no CI), `validate:content`, `test:contrast` lendo os tokens de `globals.css`, 0 vulnerabilidades `pnpm audit --prod` |
 
 ### O que NÃO está implementado
 
-- Code-shots (Fase 6) — sem token GitHub
 - Deploy em VPS (Fase 10) — sem acesso à VPS
 - Envio real de e-mail (Resend) — sem chaves API
-- Cases reais — MDXs são `draft`, sem galeria/vídeo/resultados reais
+- Mídia real dos cases — capa, galeria e vídeo ainda são placeholders gerados por `pnpm placeholders`
+- Métricas de operação nos cases — `resultados` hoje só traz números derivados do próprio repositório
 - Web Analytics (Cloudflare) e Sentry — sem deploy prod
 - Favicon externo (`.ico` / PNG) — apenas SVG inline data URI
 - Husky pre-commit — não instalado
-- Scroll-spy na nav (IntersectionObserver) — não implementado
 - OG image default da home — não implementado
+- Processo em 3 cards com linha conectora (S6) — hoje é lista editorial com fios
+- Validação Zod no cliente do formulário, resumo de erros em `role="alert"` e contador de caracteres (S11)
+- `arcade.css` ainda é uma folha separada carregada depois de `globals.css` (fusão pendente)
+- Play de vídeo no card de projeto — implementado, dormente até existir `videos` no frontmatter
+- LinkedIn e WhatsApp nos canais de contato — sem valores reais

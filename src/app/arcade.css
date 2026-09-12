@@ -1031,17 +1031,28 @@ body::before {
   color: var(--allan-cyan);
   font: 0.55rem var(--font-display);
 }
+.contact-side {
+  container-type: inline-size;
+}
+/* Channels share one row, each card sized to its value (short handles, since
+   the label names the platform). Narrow columns fall back to a stack. */
 .contact-channels {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 10px;
   padding: 0;
   margin: 0 0 28px;
   list-style: none;
 }
+@container (min-width: 31rem) {
+  .contact-channels {
+    grid-template-columns: repeat(3, auto);
+  }
+}
 .contact-channels a {
   display: grid;
+  align-content: start;
   gap: 4px;
+  height: 100%;
   padding: 12px 16px;
   border: 1px solid var(--line);
   text-decoration: none;
@@ -1058,6 +1069,7 @@ body::before {
   font: 0.52rem var(--font-display);
 }
 .contact-channels strong {
+  overflow-wrap: break-word;
   color: var(--allan-ink);
   font: 400 0.78rem var(--font-mono);
 }

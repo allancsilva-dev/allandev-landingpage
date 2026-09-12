@@ -16,6 +16,8 @@ import {
   DecisionsTable,
   Metrics,
 } from "@/components/mdx";
+import { CodeShot } from "@/components/code-shot";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const dynamicParams = false;
 type Props = { params: Promise<{ slug: string }> };
@@ -27,7 +29,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const item = await getPublishedProject((await params).slug);
   if (!item) return {};
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4000";
+  const base = getSiteUrl().origin;
   return {
     title: item.project.titulo,
     description: item.project.resumo,
@@ -45,6 +47,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function slugifyHeading(text: string) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 function extractHeadings(source: string) {
   const headings: { id: string; text: string; level: number }[] = [];
   const lines = source.split("\n");
@@ -53,16 +64,20 @@ function extractHeadings(source: string) {
     if (match) {
       const level = match[1]!.length;
       const text = match[2]!.trim();
-      const id = text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      headings.push({ id, text, level });
+      headings.push({ id: slugifyHeading(text), text, level });
     }
   }
   return headings;
+}
+
+// The TOC links to the same ids extractHeadings derives, so the rendered
+// headings have to carry them \u2014 no rehype plugin does it for us here.
+function headingWithId(level: 2 | 3) {
+  const Tag = `h${level}` as const;
+  return function Heading({ children }: { children?: React.ReactNode }) {
+    const text = typeof children === "string" ? children : String(children);
+    return <Tag id={slugifyHeading(text)}>{children}</Tag>;
+  };
 }
 
 export default async function ProjectPage({ params }: Props) {
@@ -78,7 +93,16 @@ export default async function ProjectPage({ params }: Props) {
 
   const { content } = await compileMDX({
     source: item.source,
-    options: { mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [] } },
+    options: {
+      // next-mdx-remote v6 strips every `{...}` expression by default, and that
+      // includes JSX attribute values — `<Metrics resultados={[...]} />` would
+      // arrive with no props at all. The MDX here is authored in this repo and
+      // gated by `validate:content`, not user input, so the expression block is
+      // off; `blockDangerousJS` stays on and still refuses eval, Function,
+      // process and friends.
+      blockJS: false,
+      mdxOptions: { remarkPlugins: [remarkGfm], rehypePlugins: [] },
+    },
     components: {
       a: ({ href = "", ...props }) => (
         <a
@@ -87,12 +111,15 @@ export default async function ProjectPage({ params }: Props) {
           {...props}
         />
       ),
+      h2: headingWithId(2),
+      h3: headingWithId(3),
       Gallery,
       VideoPlayer,
       Callout,
       Architecture,
       DecisionsTable,
       Metrics,
+      CodeShot,
     },
   });
 
@@ -108,8 +135,8 @@ export default async function ProjectPage({ params }: Props) {
           <Image
             src={item.project.capa.src}
             alt={item.project.capa.alt}
-            width={1180}
-            height={600}
+            width={1920}
+            height={1080}
             sizes="(max-width: 800px) 100vw, 1180px"
             priority
             style={{ borderRadius: "10px", width: "100%", height: "auto" }}

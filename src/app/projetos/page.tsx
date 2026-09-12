@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { ProjectCard } from "@/components/project-card";
+import { RevealGroup } from "@/components/ui/reveal";
 import { listPublishedProjects } from "@/lib/content/projects";
+import { homeContent } from "@/lib/home-content";
 
 export const metadata = {
   title: "Projetos",
@@ -11,29 +14,28 @@ export default async function ProjectsPage() {
   const projects = await listPublishedProjects();
   return (
     <main className="project-page">
-      <Link href="/">← HOME</Link>
+      <Link className="project-breadcrumb" href="/">
+        ← HOME
+      </Link>
       <h1>PROJETOS</h1>
       {projects.length === 0 ? (
-        <div className="empty-projects" style={{ marginTop: "2rem" }}>
-          <span>CASES / EM PREPARAÇÃO</span>
-          <p>Cases em revisão. Nenhum projeto publicado ainda.</p>
+        <div className="empty-projects">
+          <span>{homeContent.projetos.emptyLabel}</span>
+          <p>{homeContent.projetos.emptyBody}</p>
+          <Link href="/#contato">FALAR SOBRE UM PROJETO →</Link>
         </div>
       ) : (
-        <ul className="project-list" style={{ marginTop: "2rem" }}>
-          {projects.map((project) => (
-            <li key={project.slug}>
-              <Link href={`/projetos/${project.slug}`}>
-                <span>{project.papel}</span>
-                <strong>{project.titulo}</strong>
-                <p>{project.resumo}</p>
-                <span className="project-stack">
-                  {project.stack.slice(0, 3).join(", ")}
-                  {project.stack.length > 3 && ` +${project.stack.length - 3}`}
-                </span>
-              </Link>
-            </li>
+        // Same card as the home grid, so the two listings cannot drift apart.
+        <RevealGroup className="project-grid" stagger={80}>
+          {projects.map((project, index) => (
+            <ProjectCard
+              key={project.slug}
+              project={project}
+              sizes="(max-width: 767px) 100vw, 50vw"
+              priority={index === 0}
+            />
           ))}
-        </ul>
+        </RevealGroup>
       )}
     </main>
   );

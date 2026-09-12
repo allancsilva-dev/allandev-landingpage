@@ -1,0 +1,147 @@
+---
+titulo: Gestor Financeiro
+resumo: Gestão financeira pessoal com ledger reconciliável, visão patrimonial e clientes web e mobile sobre uma API versionada.
+status: published
+destaque: 4
+periodo:
+  inicio: "2025-02"
+  fim: null
+papel: Desenvolvedor full-stack e produto
+stack:
+  - Java
+  - Spring Boot
+  - PostgreSQL
+  - React
+  - React Native
+  - TypeScript
+  - Docker
+capa:
+  src: /images/projects/gestor-financeiro/cover.webp
+  alt: Visão financeira do Gestor Financeiro com disponibilidade, obrigações e patrimônio
+atualizadoEm: 2026-08-26
+galeria:
+  - src: /images/projects/gestor-financeiro/dashboard.webp
+    alt: Dashboard do Gestor Financeiro com indicadores de caixa e patrimônio
+    legenda: Disponibilidade, obrigações e patrimônio numa leitura única
+  - src: /images/projects/gestor-financeiro/accounts.webp
+    alt: Extrato reconciliado de uma conta no Gestor Financeiro
+    legenda: Conta financeira com saldo e trilha de ajustes
+  - src: /images/projects/gestor-financeiro/goals-mobile.webp
+    alt: Tela mobile de metas financeiras em moldura de celular
+    legenda: Metas financeiras também operáveis pelo aplicativo
+resultados:
+  - valor: "9"
+    rotulo: Métricas oficiais
+    contexto: Indicadores têm definição explícita para evitar leituras contraditórias do mesmo saldo.
+  - valor: "2"
+    rotulo: Clientes da API
+    contexto: Web e mobile compartilham contratos e regras financeiras do backend.
+  - valor: "v1"
+    rotulo: API versionada
+    contexto: Evolução do contrato é explícita e não depende da versão do cliente instalado.
+---
+
+## O problema
+
+Saldo de conta não responde sozinho quanto está disponível para gastar. Faturas,
+reservas, metas, dívidas e investimentos mudam a leitura — e planilhas costumam
+misturar esses conceitos até dois números corretos parecerem incompatíveis.
+
+O Gestor Financeiro trata lançamentos como ledger e deriva uma visão coerente de
+caixa, obrigações e patrimônio. A mesma regra serve dashboard, relatório, web e
+mobile.
+
+<Callout variant="warning">
+  Métrica financeira precisa de definição, não apenas de fórmula. Horizonte,
+  liquidez e origem do lançamento fazem parte do significado do número.
+</Callout>
+
+## Arquitetura
+
+<Architecture
+  titulo="Da operação à métrica"
+  diagrama="/images/projects/gestor-financeiro/architecture.webp"
+  legenda="Clientes web e mobile usam a API v1; serviços de domínio gravam o ledger que alimenta saldos e métricas."
+/>
+
+O backend Spring Boot expõe uma API versionada sobre PostgreSQL. Serviços de
+domínio concentram reconciliação, faturas, metas, recorrências, orçamentos e
+investimentos. React atende a operação detalhada no desktop; React Native leva
+as rotinas frequentes ao celular.
+
+### Decisões técnicas
+
+<DecisionsTable
+  decisoes={[
+    {
+      decisao: "Ledger como fonte de verdade",
+      alternativas: "Editar saldo agregado diretamente",
+      motivo:
+        "Todo saldo pode ser explicado por lançamentos; correção cria trilha em vez de apagar a história.",
+    },
+    {
+      decisao: "Nove métricas com contrato oficial",
+      alternativas: "Cada tela recompor seus indicadores",
+      motivo:
+        "Dashboard, relatório e mobile exibem o mesmo conceito, com o mesmo horizonte e as mesmas exclusões.",
+    },
+    {
+      decisao: "API v1 compartilhada",
+      alternativas: "Backend específico por cliente",
+      motivo:
+        "Web e mobile evoluem em ritmos diferentes sem duplicar regra financeira.",
+    },
+  ]}
+/>
+
+## Interface
+
+<Gallery
+  images={[
+    {
+      src: "/images/projects/gestor-financeiro/dashboard.webp",
+      alt: "Dashboard do Gestor Financeiro com indicadores de caixa e patrimônio",
+      legenda: "Disponibilidade, obrigações e patrimônio numa leitura única",
+    },
+    {
+      src: "/images/projects/gestor-financeiro/accounts.webp",
+      alt: "Extrato reconciliado de uma conta no Gestor Financeiro",
+      legenda: "Conta financeira com saldo e trilha de ajustes",
+    },
+    {
+      src: "/images/projects/gestor-financeiro/goals-mobile.webp",
+      alt: "Tela mobile de metas financeiras em moldura de celular",
+      legenda: "Metas financeiras também operáveis pelo aplicativo",
+    },
+  ]}
+/>
+
+## Evidências técnicas
+
+<Metrics
+  resultados={[
+    {
+      valor: "9",
+      rotulo: "Métricas oficiais",
+      contexto:
+        "Indicadores têm definição explícita para evitar leituras contraditórias do mesmo saldo.",
+    },
+    {
+      valor: "2",
+      rotulo: "Clientes da API",
+      contexto:
+        "Web e mobile compartilham contratos e regras financeiras do backend.",
+    },
+    {
+      valor: "v1",
+      rotulo: "API versionada",
+      contexto:
+        "Evolução do contrato é explícita e não depende da versão do cliente instalado.",
+    },
+  ]}
+/>
+
+<Callout variant="tip">
+  Projeto em andamento. As métricas aqui descrevem contratos implementados e
+  verificáveis, não projeções de economia ou uso.
+</Callout>

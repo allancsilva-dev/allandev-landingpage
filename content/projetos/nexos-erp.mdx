@@ -1,11 +1,11 @@
 ---
 titulo: Nexos ERP
-resumo: Plataforma de gestão empresarial em documentação, com arquitetura, decisões técnicas e resultados revisados antes da publicação.
-status: draft
-destaque: null
+resumo: Plataforma financeira multi-tenant para PMEs brasileiras — contas, conciliação, fechamento contábil e aprovações com trilha de auditoria.
+status: published
+destaque: 1
 homeTeaser:
   order: 1
-  label: Case em preparação
+  label: Em andamento
   visualVariant: nexos
 periodo:
   inicio: "2024-01"
@@ -13,12 +13,173 @@ periodo:
 papel: Desenvolvedor full-stack e infraestrutura
 stack:
   - TypeScript
-  - React
-  - Node.js
+  - NestJS
+  - PostgreSQL
+  - Drizzle ORM
+  - Next.js
+  - Redis
+  - BullMQ
+  - Docker
 capa:
-  src: /images/project-placeholder.svg
-  alt: Painel abstrato reservado para a capa do case Nexos ERP
-atualizadoEm: 2026-08-10
+  src: /images/projects/nexos-erp/cover.webp
+  alt: Dashboard financeiro do Nexos ERP com fluxo de caixa e indicadores operacionais
+atualizadoEm: 2026-08-26
+galeria:
+  - src: /images/projects/nexos-erp/cash-flow.webp
+    alt: Fluxo de caixa do Nexos ERP com saldos e projeção financeira
+    legenda: Fluxo de caixa projetado com visão por período
+  - src: /images/projects/nexos-erp/payables.webp
+    alt: Lista de contas a pagar do Nexos ERP
+    legenda: Contas a pagar com vencimentos e estado operacional
+  - src: /images/projects/nexos-erp/approvals.webp
+    alt: Fila de aprovações financeiras do Nexos ERP
+    legenda: Aprovações financeiras centralizadas e auditáveis
+  - src: /images/projects/nexos-erp/reports-responsive.webp
+    alt: Relatório DRE do Nexos ERP em uma janela web estreita
+    legenda: Relatórios adaptados a uma janela web compacta
+resultados:
+  - valor: "324"
+    rotulo: Arquivos de teste
+    contexto: Regras financeiras e de acesso cobertas por teste automatizado no backend.
+  - valor: "9"
+    rotulo: Guards em cadeia
+    contexto: Autenticação, tenant, estado da conta, feature, filial, RBAC, posse, step-up e throttle, nessa ordem.
+  - valor: "1"
+    rotulo: Schema por tenant
+    contexto: Isolamento no banco, resolvido por requisição, não por cláusula WHERE espalhada pelo código.
+codeShots:
+  - nexos-ordem-dos-guards
+  - nexos-trava-de-periodo
 ---
 
-Conteúdo em revisão. Este rascunho não gera rota pública.
+## O problema
+
+Operador financeiro de PME vive entre planilha e ERP legado. A planilha aceita
+qualquer coisa; o ERP legado aceita quase nada, e o que ele recusa vem sem
+explicação. Nos dois casos o fechamento do mês acontece fora do sistema, num
+arquivo paralelo que ninguém audita.
+
+O Nexos ERP é SaaS multi-tenant e cobre o ciclo financeiro inteiro: contas a
+pagar e a receber, fluxo de caixa, conciliação bancária, plano de contas, razão,
+regras de aprovação, travas de período e relatórios (DRE, balancete, aging).
+
+<Callout variant="info">
+  O produto é operado por perfis muito diferentes — do lançador de nota ao
+  aprovador com alçada sobre o caixa. Precisão vale mais que velocidade, mas
+  velocidade também conta: são as mesmas telas, todos os dias, contra prazo.
+</Callout>
+
+## Arquitetura
+
+<Architecture
+  titulo="Fluxo de uma requisição"
+  diagrama="/images/projects/nexos-erp/architecture.webp"
+  legenda="Proxy, frontend Next.js, API NestJS, worker BullMQ e PostgreSQL com um schema por tenant."
+/>
+
+Backend em NestJS com Drizzle sobre PostgreSQL, worker separado para trabalho
+assíncrono (BullMQ sobre Redis), frontend em Next.js. Em produção são containers
+independentes atrás de um proxy, com backup e healthcheck próprios.
+
+O isolamento entre clientes é **por schema**, resolvido no início da requisição e
+guardado no contexto assíncrono (`nestjs-cls`). Repositório nenhum precisa
+lembrar de filtrar por tenant, porque não existe caminho em que o tenant esteja
+ausente.
+
+### Decisões técnicas
+
+<DecisionsTable
+  decisoes={[
+    {
+      decisao: "Um schema PostgreSQL por tenant",
+      alternativas: "Coluna tenant_id compartilhada",
+      motivo:
+        "Vazamento entre clientes deixa de depender de todo desenvolvedor lembrar do WHERE. O custo é migração por schema, resolvido no deploy.",
+    },
+    {
+      decisao: "Ordem dos guards validada no boot",
+      alternativas: "Confiar na ordem de registro dos módulos",
+      motivo:
+        "Reordenar guard num refactor não quebra teste nenhum, mas quebra o isolamento. A aplicação passa a não subir.",
+    },
+    {
+      decisao: "Regra de domínio fora do framework",
+      alternativas: "Validação no controller ou no DTO",
+      motivo:
+        "Trava de período tem que valer para tela, importação e job. Isolada, ela é testável sem HTTP e não tem porta dos fundos.",
+    },
+    {
+      decisao: "Data civil em vez de instante",
+      alternativas: "Comparar Date com fuso do servidor",
+      motivo:
+        "Competência contábil é dia de calendário. Comparar timestamp faz lançamento de fim de mês mudar de período conforme o fuso.",
+    },
+  ]}
+/>
+
+## Código
+
+Os repositórios são privados. Os trechos abaixo são fragmentos pequenos e
+revisados, escolhidos porque mostram decisão de arquitetura — não porque
+representam o sistema.
+
+<CodeShot id="nexos-ordem-dos-guards" />
+
+<CodeShot id="nexos-trava-de-periodo" />
+
+## Interface
+
+<Gallery
+  images={[
+    {
+      src: "/images/projects/nexos-erp/cash-flow.webp",
+      alt: "Fluxo de caixa do Nexos ERP com saldos e projeção financeira",
+      legenda: "Fluxo de caixa projetado com visão por período",
+    },
+    {
+      src: "/images/projects/nexos-erp/payables.webp",
+      alt: "Lista de contas a pagar do Nexos ERP",
+      legenda: "Contas a pagar com vencimentos e estado operacional",
+    },
+    {
+      src: "/images/projects/nexos-erp/approvals.webp",
+      alt: "Fila de aprovações financeiras do Nexos ERP",
+      legenda: "Aprovações financeiras centralizadas e auditáveis",
+    },
+    {
+      src: "/images/projects/nexos-erp/reports-responsive.webp",
+      alt: "Relatório DRE do Nexos ERP em uma janela web estreita",
+      legenda: "Relatórios adaptados a uma janela web compacta",
+    },
+  ]}
+/>
+
+## Evidências técnicas
+
+<Metrics
+  resultados={[
+    {
+      valor: "324",
+      rotulo: "Arquivos de teste",
+      contexto:
+        "Regras financeiras e de acesso cobertas por teste automatizado no backend.",
+    },
+    {
+      valor: "9",
+      rotulo: "Guards em cadeia",
+      contexto:
+        "Autenticação, tenant, estado da conta, feature, filial, RBAC, posse, step-up e throttle, nessa ordem.",
+    },
+    {
+      valor: "1",
+      rotulo: "Schema por tenant",
+      contexto:
+        "Isolamento no banco, resolvido por requisição, não por cláusula WHERE espalhada pelo código.",
+    },
+  ]}
+/>
+
+<Callout variant="tip">
+  Projeto em andamento. Os números acima saem do próprio repositório; métricas
+  de operação entram quando houver base em produção para sustentá-las.
+</Callout>

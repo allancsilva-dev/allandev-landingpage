@@ -1,25 +1,190 @@
 ---
 titulo: Renowa
-resumo: Plataforma de renovação de contratos com workflow digital, arquitetura, decisões técnicas e resultados em documentação antes da publicação.
-status: draft
-destaque: null
+resumo: Gestão comercial B2B multi-tenant com app mobile offline-first — pedidos, clientes, estoque e financeiro para equipes de venda externa.
+status: published
+destaque: 2
 homeTeaser:
   order: 2
-  label: Case em preparação
+  label: Em andamento
   visualVariant: renowa
 periodo:
   inicio: "2024-06"
   fim: null
-papel: Desenvolvedor full-stack
+papel: Desenvolvedor full-stack e infraestrutura
 stack:
   - TypeScript
-  - React
-  - Node.js
+  - NestJS
+  - TypeORM
   - PostgreSQL
+  - React
+  - React Native
+  - Expo SQLite
+  - Docker
 capa:
-  src: /images/project-placeholder.svg
-  alt: Interface abstrata reservada para a capa do case Renowa
-atualizadoEm: 2026-08-10
+  src: /images/projects/renowa/cover.webp
+  alt: Dashboard comercial do Renowa com resumo de pedidos e faturamento
+atualizadoEm: 2026-08-26
+galeria:
+  - src: /images/projects/renowa/orders.webp
+    alt: Lista de pedidos comerciais no Renowa
+    legenda: Pedidos com status, cliente e valor em uma visão operacional
+  - src: /images/projects/renowa/billing.webp
+    alt: Painel de faturamento do Renowa
+    legenda: Faturamento conectado ao ciclo comercial
+  - src: /images/projects/renowa/products.webp
+    alt: Catálogo de produtos do Renowa
+    legenda: Produtos e preços disponíveis para a equipe de vendas
+  - src: /images/projects/renowa/orders-responsive.webp
+    alt: Lista de pedidos do Renowa em uma janela web estreita
+    legenda: Operação web adaptada a uma janela compacta
+resultados:
+  - valor: "6"
+    rotulo: Entidades sincronizáveis
+    contexto: Clientes, pedidos, itens de pedido, produtos, fornecedores e transportadoras, cada uma com política própria de escrita.
+  - valor: "37"
+    rotulo: Migrações versionadas
+    contexto: Todo o esquema evolui por migração revisada, incluindo o change feed do sync.
+  - valor: "3"
+    rotulo: Clientes do mesmo backend
+    contexto: Web, app mobile offline-first e integração — uma porta de escrita por entidade, sem regra duplicada.
+codeShots:
+  - renowa-idempotencia-do-sync
+  - renowa-contrato-de-escrita
 ---
 
-Conteúdo em revisão. Este rascunho não gera rota pública.
+## O problema
+
+Representante externo trabalha onde o sinal acaba: galpão, zona rural, prédio de
+concreto. Se o app depender de rede, o pedido não é tirado — ou é tirado num
+caderno e digitado à noite, com o preço de ontem.
+
+O Renowa é um SaaS B2B multi-tenant de gestão comercial: clientes, pedidos,
+produtos, fornecedores, transportadoras e financeiro, com app mobile
+offline-first para quem está em campo.
+
+<Callout variant="warning">
+  Offline-first não é "salvar local e mandar depois". É decidir, antes de
+  escrever a primeira linha, o que acontece quando duas versões do mesmo pedido
+  chegam ao servidor — e garantir que a resposta nunca seja "a última ganha".
+</Callout>
+
+## Arquitetura
+
+<Architecture
+  titulo="Ciclo de sincronização"
+  diagrama="/images/projects/renowa/architecture.webp"
+  legenda="Fila local em SQLite, push idempotente por operação, change feed monotônico no pull."
+/>
+
+Backend NestJS com TypeORM sobre PostgreSQL, frontend React e app Expo com
+SQLite local. O app grava na fila local e segue funcionando; a sincronização é
+um detalhe de transporte, não um pré-requisito da operação.
+
+### Concorrência: o que a v1 errava
+
+A primeira versão do push resolvia conflito por `client_timestamp`. Relógio
+errado no aparelho apagava edição alheia em silêncio — o pior tipo de bug, o que
+não aparece em log nenhum.
+
+A v2 tirou o relógio do cliente da decisão:
+
+<DecisionsTable
+  decisoes={[
+    {
+      decisao: "Versão emitida pelo servidor, com base_version obrigatório",
+      alternativas: "Resolver por client_timestamp",
+      motivo:
+        "Relógio de dispositivo não é fonte de verdade. Divergência vira VERSION_CONFLICT explícito, nunca descarte silencioso.",
+    },
+    {
+      decisao: "operation_id com inbox durável",
+      alternativas: "Deduplicar por payload ou não deduplicar",
+      motivo:
+        "Reenvio de fila é normal em campo. O resultado gravado responde a repetição sem reprocessar a mutação.",
+    },
+    {
+      decisao: "Advisory lock transacional por operação",
+      alternativas: "Lock de tabela ou fila serial",
+      motivo:
+        "Serializa só os retries da mesma operação, e funciona com várias instâncias do backend atrás do proxy.",
+    },
+    {
+      decisao: "Allowlist de escrita declarada por entidade",
+      alternativas: "Validar campo a campo no serviço",
+      motivo:
+        "Campo derivado e campo de identidade recusam por motivos diferentes, e a mensagem precisa dizer qual é qual.",
+    },
+    {
+      decisao: "Pedido com uma porta de escrita só",
+      alternativas: "Caminho separado para REST e para sync",
+      motivo:
+        "Máquina de estados e recálculo de total num lugar só. Dois caminhos divergem — é questão de tempo.",
+    },
+  ]}
+/>
+
+## Código
+
+Repositórios privados. Os fragmentos abaixo são curados: mostram a decisão, não
+o sistema.
+
+<CodeShot id="renowa-idempotencia-do-sync" />
+
+<CodeShot id="renowa-contrato-de-escrita" />
+
+## Interface
+
+<Gallery
+  images={[
+    {
+      src: "/images/projects/renowa/orders.webp",
+      alt: "Lista de pedidos comerciais no Renowa",
+      legenda: "Pedidos com status, cliente e valor em uma visão operacional",
+    },
+    {
+      src: "/images/projects/renowa/billing.webp",
+      alt: "Painel de faturamento do Renowa",
+      legenda: "Faturamento conectado ao ciclo comercial",
+    },
+    {
+      src: "/images/projects/renowa/products.webp",
+      alt: "Catálogo de produtos do Renowa",
+      legenda: "Produtos e preços disponíveis para a equipe de vendas",
+    },
+    {
+      src: "/images/projects/renowa/orders-responsive.webp",
+      alt: "Lista de pedidos do Renowa em uma janela web estreita",
+      legenda: "Operação web adaptada a uma janela compacta",
+    },
+  ]}
+/>
+
+## Evidências técnicas
+
+<Metrics
+  resultados={[
+    {
+      valor: "6",
+      rotulo: "Entidades sincronizáveis",
+      contexto:
+        "Clientes, pedidos, itens de pedido, produtos, fornecedores e transportadoras, cada uma com política própria de escrita.",
+    },
+    {
+      valor: "37",
+      rotulo: "Migrações versionadas",
+      contexto:
+        "Todo o esquema evolui por migração revisada, incluindo o change feed do sync.",
+    },
+    {
+      valor: "3",
+      rotulo: "Clientes do mesmo backend",
+      contexto:
+        "Web, app mobile offline-first e integração — uma porta de escrita por entidade, sem regra duplicada.",
+    },
+  ]}
+/>
+
+<Callout variant="tip">
+  Projeto em andamento. Os números saem do repositório; volume de pedidos e
+  tempo de campo entram quando houver operação em produção para medir.
+</Callout>

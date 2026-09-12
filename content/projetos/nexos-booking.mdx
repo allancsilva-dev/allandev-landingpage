@@ -1,0 +1,155 @@
+---
+titulo: Nexos Booking
+resumo: Plataforma SaaS multi-tenant de agendamentos com disponibilidade em tempo real, prevenção de conflitos e jornada pública responsiva.
+status: published
+destaque: 3
+periodo:
+  inicio: "2025-09"
+  fim: null
+papel: Desenvolvedor full-stack e infraestrutura
+stack:
+  - TypeScript
+  - NestJS
+  - Next.js
+  - PostgreSQL
+  - Drizzle ORM
+  - Socket.IO
+  - Docker
+capa:
+  src: /images/projects/nexos-booking/cover.webp
+  alt: Vitrine pública de serviços do Nexos Booking para o Studio Demo
+atualizadoEm: 2026-08-26
+galeria:
+  - src: /images/projects/nexos-booking/booking-services.webp
+    alt: Jornada pública do Nexos Booking para escolher profissional e serviço
+    legenda: Fluxo público reúne escolha e resumo do agendamento
+  - src: /images/projects/nexos-booking/booking-professionals.webp
+    alt: Serviço selecionado na jornada de agendamento do Nexos Booking
+    legenda: Preço e duração permanecem visíveis durante a decisão
+  - src: /images/projects/nexos-booking/booking-calendar.webp
+    alt: Profissional e serviço selecionados com calendário disponível
+    legenda: Disponibilidade calculada depois das escolhas necessárias
+  - src: /images/projects/nexos-booking/booking-responsive.webp
+    alt: Jornada do Nexos Booking em viewport mobile
+    legenda: Mesma jornada pública adaptada para celular
+resultados:
+  - valor: "12"
+    rotulo: Migrações versionadas
+    contexto: Estrutura multi-tenant e agenda evoluem por migrações rastreáveis.
+  - valor: "1"
+    rotulo: Transação por reserva
+    contexto: Validação de disponibilidade e gravação acontecem na mesma unidade atômica.
+  - valor: "RLS"
+    rotulo: Isolamento no banco
+    contexto: A política de acesso reforça a fronteira de tenant dentro do PostgreSQL.
+---
+
+## O problema
+
+Agenda por mensagem parece simples até duas pessoas escolherem o mesmo horário.
+Entre a consulta e a confirmação, disponibilidade vira um problema concorrente;
+em SaaS, ela ainda precisa respeitar a fronteira entre empresas.
+
+O Nexos Booking reúne catálogo público, profissionais, serviços e horários numa
+jornada direta, enquanto o painel administrativo mantém a operação em tempo
+real.
+
+<Callout variant="info">
+  A interface pode sugerir um horário; somente a transação no servidor pode
+  confirmá-lo. Essa separação evita que latência vire reserva duplicada.
+</Callout>
+
+## Arquitetura
+
+<Architecture
+  titulo="Confirmação de um horário"
+  diagrama="/images/projects/nexos-booking/architecture.webp"
+  legenda="Next.js, API NestJS e PostgreSQL com RLS; eventos confirmados seguem por outbox e Socket.IO."
+/>
+
+O frontend Next.js atende a jornada pública e a gestão. A API NestJS centraliza
+autorização e regras de agenda; Drizzle versiona o acesso ao PostgreSQL. A
+transação verifica o intervalo e cria a reserva de forma atômica. Depois do
+commit, a outbox alimenta atualizações em tempo real.
+
+### Decisões técnicas
+
+<DecisionsTable
+  decisoes={[
+    {
+      decisao: "Conflito resolvido no banco",
+      alternativas: "Confiar no horário exibido pelo navegador",
+      motivo:
+        "A tela é uma fotografia antiga assim que recebe a resposta. A confirmação precisa revalidar disponibilidade dentro da transação.",
+    },
+    {
+      decisao: "RLS como segunda fronteira de tenant",
+      alternativas: "Filtrar apenas na aplicação",
+      motivo:
+        "Autorização continua na API, mas uma consulta defeituosa também encontra a política do PostgreSQL.",
+    },
+    {
+      decisao: "Outbox depois do commit",
+      alternativas: "Emitir Socket.IO durante a gravação",
+      motivo:
+        "O cliente só recebe um evento para estado que realmente foi persistido.",
+    },
+  ]}
+/>
+
+## Interface
+
+<Gallery
+  images={[
+    {
+      src: "/images/projects/nexos-booking/booking-services.webp",
+      alt: "Jornada pública do Nexos Booking para escolher profissional e serviço",
+      legenda: "Fluxo público reúne escolha e resumo do agendamento",
+    },
+    {
+      src: "/images/projects/nexos-booking/booking-professionals.webp",
+      alt: "Serviço selecionado na jornada de agendamento do Nexos Booking",
+      legenda: "Preço e duração permanecem visíveis durante a decisão",
+    },
+    {
+      src: "/images/projects/nexos-booking/booking-calendar.webp",
+      alt: "Profissional e serviço selecionados com calendário disponível",
+      legenda: "Disponibilidade aparece depois das escolhas necessárias",
+    },
+    {
+      src: "/images/projects/nexos-booking/booking-responsive.webp",
+      alt: "Jornada do Nexos Booking em viewport mobile",
+      legenda: "Mesma jornada pública adaptada para celular",
+    },
+  ]}
+/>
+
+## Evidências técnicas
+
+<Metrics
+  resultados={[
+    {
+      valor: "12",
+      rotulo: "Migrações versionadas",
+      contexto:
+        "Estrutura multi-tenant e agenda evoluem por migrações rastreáveis.",
+    },
+    {
+      valor: "1",
+      rotulo: "Transação por reserva",
+      contexto:
+        "Validação de disponibilidade e gravação acontecem na mesma unidade atômica.",
+    },
+    {
+      valor: "RLS",
+      rotulo: "Isolamento no banco",
+      contexto:
+        "A política de acesso reforça a fronteira de tenant dentro do PostgreSQL.",
+    },
+  ]}
+/>
+
+<Callout variant="tip">
+  Projeto em andamento. Os indicadores apresentados são verificáveis no
+  repositório; métricas comerciais ficam fora até existir operação suficiente.
+</Callout>

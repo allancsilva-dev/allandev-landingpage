@@ -35,6 +35,20 @@ export const listAllProjects = cache(async () => {
   return projects;
 });
 
+/** Shared by the case page HUD and the card badge so the two can't disagree. */
+export function projectStatusLabel(project: ProjectSummary) {
+  return project.periodo.fim ? "ENTREGUE" : "EM ANDAMENTO";
+}
+
+/** Chips as `first 3 + "+N"`, the shape S7 asks for. */
+export function stackChips(stack: readonly string[], visible = 3) {
+  const rest = stack.length - visible;
+  return {
+    shown: stack.slice(0, visible),
+    more: rest > 0 ? `+${rest}` : null,
+  };
+}
+
 export async function listPublishedProjects() {
   return (await listAllProjects())
     .filter((project) => project.status === "published")

@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 const yearMonth = /^\d{4}-(0[1-9]|1[0-2])$/;
-const localAsset =
-  /^\/(?!\/|.*\.\.)[a-zA-Z0-9/_-]+\.(avif|webp|png|jpg|jpeg|svg)$/;
+// No SVG: `next.config.ts` keeps `dangerouslyAllowSVG: false`, so an SVG here
+// would pass validation and then 400 at the image optimizer in production.
+const localAsset = /^\/(?!\/|.*\.\.)[a-zA-Z0-9/_-]+\.(avif|webp|png|jpg|jpeg)$/;
 const localVideo = /^\/(?!\/|.*\.\.)[a-zA-Z0-9/_-]+\.(mp4|webm)$/;
 
 export const projectFrontmatterSchema = z.object({

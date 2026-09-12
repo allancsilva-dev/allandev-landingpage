@@ -13,3 +13,5 @@ test-results/
 .DS_Store
 docs/.DS_Store
 docs/muniz-dev-landing-page-main/
+
+.cache/

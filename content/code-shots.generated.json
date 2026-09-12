@@ -1,0 +1,30 @@
+[
+  {
+    "id": "nexos-ordem-dos-guards",
+    "file": "/code-shots/nexos-ordem-dos-guards.png",
+    "width": 1073,
+    "height": 900,
+    "sourceHash": "sha256:a462fc698cfaa0c859c5980930c32afa0099d602d658f9f47435171c57cfa6e7"
+  },
+  {
+    "id": "nexos-trava-de-periodo",
+    "file": "/code-shots/nexos-trava-de-periodo.png",
+    "width": 848,
+    "height": 588,
+    "sourceHash": "sha256:c92fef3accfb9c60702823b95bf833870b05e7e7344d3684026348fc0b773b22"
+  },
+  {
+    "id": "renowa-idempotencia-do-sync",
+    "file": "/code-shots/renowa-idempotencia-do-sync.png",
+    "width": 803,
+    "height": 660,
+    "sourceHash": "sha256:76731bb08716ec4441da5c02c7604bad31a36c7d2438d5212bf05d1d3e56998b"
+  },
+  {
+    "id": "renowa-contrato-de-escrita",
+    "file": "/code-shots/renowa-contrato-de-escrita.png",
+    "width": 848,
+    "height": 828,
+    "sourceHash": "sha256:0c23edb859c5261d2c7dc75e6e66f17f7c40c4d7ad6d7c49c122444f929c902c"
+  }
+]

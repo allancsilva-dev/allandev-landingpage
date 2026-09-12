@@ -19,6 +19,10 @@
     "test:e2e": "playwright test",
     "test:contrast": "node --import tsx scripts/test-contrast.ts",
     "validate:content": "node --import tsx scripts/validate-content.ts",
+    "code-shots": "node --import tsx scripts/build-code-shots.ts",
+    "capture:projects": "node --import tsx scripts/capture-projects.ts",
+    "project-assets": "node --import tsx scripts/build-project-assets.ts",
+    "placeholders": "node --import tsx scripts/make-placeholders.ts",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:contrast && pnpm test && pnpm build"
   },
   "dependencies": {
@@ -26,7 +30,6 @@
     "@fontsource/onest": "5.2.8",
     "@fontsource/press-start-2p": "5.3.0",
     "@radix-ui/react-accordion": "^1.2.20",
-    "@radix-ui/react-dialog": "^1.1.23",
     "gray-matter": "4.0.3",
     "lucide-react": "^1.31.0",
     "motion": "^13.0.0",
@@ -39,6 +42,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",
+    "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/postcss": "4.1.18",
     "@types/node": "24.10.4",
     "@types/react": "19.2.17",
@@ -47,9 +51,11 @@
     "eslint": "9.39.2",
     "eslint-config-next": "16.3.0",
     "prettier": "3.8.2",
+    "shiki": "^4.4.3",
     "tailwindcss": "4.1.18",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "vitest": "4.0.18",
+    "wawoff2": "^2.0.1"
   }
 }

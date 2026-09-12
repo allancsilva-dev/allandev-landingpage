@@ -1,0 +1,50 @@
+[
+  {
+    "id": "nexos-ordem-dos-guards",
+    "projeto": "nexos-erp",
+    "sourceRepo": "nexos-erp",
+    "path": "backend/src/common/policy/app-guard-order.validator.ts",
+    "ref": "98088a521efbedbbdad8aec2dda2647f80e55ba0",
+    "linhas": [13, 47],
+    "expectedHash": "sha256:a462fc698cfaa0c859c5980930c32afa0099d602d658f9f47435171c57cfa6e7",
+    "language": "ts",
+    "titulo": "app-guard-order.validator.ts",
+    "descricao": "Isolamento entre tenants depende da ordem em que os guards rodam, e ordem de registro é fácil de quebrar num refactor sem nenhum teste ficar vermelho. A ordem esperada virou dado explícito, conferido no boot: se alguém reordenar ou esquecer um guard, a aplicação não sobe."
+  },
+  {
+    "id": "nexos-trava-de-periodo",
+    "projeto": "nexos-erp",
+    "sourceRepo": "nexos-erp",
+    "path": "backend/src/modules/financial/entries/domain/entry.rules.ts",
+    "ref": "98088a521efbedbbdad8aec2dda2647f80e55ba0",
+    "linhas": [9, 30],
+    "expectedHash": "sha256:c92fef3accfb9c60702823b95bf833870b05e7e7344d3684026348fc0b773b22",
+    "language": "ts",
+    "titulo": "entry.rules.ts",
+    "descricao": "Depois do fechamento contábil, lançamento em período travado não pode entrar — nem por tela, nem por importação, nem por job. A regra vive no domínio, sem framework em volta, e compara datas civis em vez de instantes para não depender de fuso do servidor."
+  },
+  {
+    "id": "renowa-idempotencia-do-sync",
+    "projeto": "renowa",
+    "sourceRepo": "renowa",
+    "path": "backend/src/sync/sync.service.ts",
+    "ref": "2abc18d92c4b95b2cd3488c9257815b49b971c82",
+    "linhas": [62, 86],
+    "expectedHash": "sha256:76731bb08716ec4441da5c02c7604bad31a36c7d2438d5212bf05d1d3e56998b",
+    "language": "ts",
+    "titulo": "sync.service.ts",
+    "descricao": "Representante em campo perde sinal e o app reenvia a fila. Sem defesa, o mesmo pedido entra duas vezes. Cada mutação carrega um operation_id: advisory lock transacional serializa só os retries dela, e o resultado gravado responde a repetição sem reprocessar nada."
+  },
+  {
+    "id": "renowa-contrato-de-escrita",
+    "projeto": "renowa",
+    "sourceRepo": "renowa",
+    "path": "backend/src/sync/sync-entity-policy.ts",
+    "ref": "2abc18d92c4b95b2cd3488c9257815b49b971c82",
+    "linhas": [9, 40],
+    "expectedHash": "sha256:0c23edb859c5261d2c7dc75e6e66f17f7c40c4d7ad6d7c49c122444f929c902c",
+    "language": "ts",
+    "titulo": "sync-entity-policy.ts",
+    "descricao": "O que o cliente offline pode escrever é allowlist declarada por entidade, não validação espalhada por serviço. Campo calculado pelo servidor é categoria separada de campo de identidade — a recusa precisa dizer coisas diferentes, e pedido tem uma porta de escrita só."
+  }
+]

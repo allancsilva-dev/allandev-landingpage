@@ -168,14 +168,19 @@ export const homeContent = {
     lede: "Conte o contexto. Respondo com próximos passos objetivos, sem reunião de descoberta disfarçada de venda.",
     email: EMAIL,
     canaisLabel: "ME ENCONTRE POR AQUI",
-    // S11 also asks for LinkedIn and WhatsApp; both are pending real values
+    // S11 also asks for WhatsApp; still pending a real value
     // (commit 05701fb removed a placeholder WhatsApp number on purpose).
     canais: [
       { label: "E-mail", value: EMAIL, href: `mailto:${EMAIL}` },
       {
         label: "GitHub",
-        value: "github.com/allancsilva-dev",
+        value: "allancsilva-dev",
         href: "https://github.com/allancsilva-dev",
+      },
+      {
+        label: "LinkedIn",
+        value: "allancsilva10",
+        href: "https://www.linkedin.com/in/allancsilva10/",
       },
     ],
   },

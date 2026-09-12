@@ -40,7 +40,10 @@ export default async function Home() {
     name: "Allan Carvalho",
     jobTitle: "Desenvolvedor full-stack e infraestrutura",
     url: getSiteUrl().toString(),
-    sameAs: ["https://github.com/allancsilva-dev"],
+    sameAs: [
+      "https://github.com/allancsilva-dev",
+      "https://www.linkedin.com/in/allancsilva10/",
+    ],
   };
   const faqJsonLd = {
     "@context": "https://schema.org",

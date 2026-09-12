@@ -1,7 +1,4 @@
-import {
-  getCodeShot,
-  type ResolvedCodeShot,
-} from "@/lib/content/code-shots";
+import { getCodeShot, type ResolvedCodeShot } from "@/lib/content/code-shots";
 import { listAllProjects } from "@/lib/content/projects";
 import { CodeShotFrame, type CodeShotView } from "@/components/code-shot-frame";
 

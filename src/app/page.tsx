@@ -32,16 +32,8 @@ const iconMap = { Monitor, Server, Smartphone, Database, Network, GitBranch };
 
 export default async function Home() {
   const projects = await listHomeProjectTeasers();
-  const {
-    hero,
-    marquee,
-    sobre,
-    processo,
-    projetos,
-    servicos,
-    faq,
-    contato,
-  } = homeContent;
+  const { hero, marquee, sobre, processo, projetos, servicos, faq, contato } =
+    homeContent;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",

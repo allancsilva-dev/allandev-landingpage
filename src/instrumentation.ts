@@ -13,8 +13,16 @@ const productionEnv = z.object({
 
 export async function register() {
   if (
-    process.env.NEXT_RUNTIME === "nodejs" &&
-    process.env.APP_ENV === "production"
+    process.env.NEXT_RUNTIME !== "nodejs" ||
+    process.env.APP_ENV !== "production"
   )
-    productionEnv.parse(process.env);
+    return;
+  const result = productionEnv.safeParse(process.env);
+  if (result.success) return;
+  // A thrown error here is only logged and the server keeps answering health
+  // checks, so a misconfigured deploy would look healthy. Exit instead, and
+  // name the variables without echoing their values.
+  const invalid = result.error.issues.map((issue) => issue.path.join("."));
+  console.error(`Invalid production environment: ${invalid.join(", ")}`);
+  process.exit(1);
 }

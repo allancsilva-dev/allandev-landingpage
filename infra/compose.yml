@@ -22,6 +22,11 @@ services:
       - /tmp:size=32m,noexec,nosuid,nodev
     volumes:
       - allandev-images:/app/.next/cache/images:rw
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     mem_limit: 768m
     cpus: 1.0
     pids_limit: 200

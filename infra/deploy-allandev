@@ -1,13 +1,25 @@
 #!/usr/bin/env sh
+# Invoked through the deploy key's forced command: the only accepted input is an
+# immutable GHCR image reference, which arrives as $1 (from $SSH_ORIGINAL_COMMAND).
 set -eu
-case "${1:-}" in ghcr.io/allancsilva-dev/allandev-landingpage:* ) image="$1" ;; * ) echo "Imagem rejeitada" >&2; exit 64 ;; esac
+case "${1:-}" in
+  ghcr.io/allancsilva-dev/allandev-landingpage:*[!a-f0-9]*) echo "Imagem rejeitada" >&2; exit 64 ;;
+  ghcr.io/allancsilva-dev/allandev-landingpage:?*) image="$1" ;;
+  *) echo "Imagem rejeitada" >&2; exit 64 ;;
+esac
 cd /opt/allandev
-container_id="$(docker compose -f infra/compose.yml ps -q site)"
-previous="$(docker inspect -f '{{.Config.Image}}' "$container_id")"
+exec 9>/opt/allandev/.deploy.lock
+flock -n 9 || { echo "Deploy em andamento" >&2; exit 75; }
+compose="docker compose -f infra/compose.yml"
+container_id="$($compose ps -q site)"
+previous=""
+[ -n "$container_id" ] && previous="$(docker inspect -f '{{.Config.Image}}' "$container_id")"
 export ALLANDEV_IMAGE="$image"
-docker compose -f infra/compose.yml pull site
-if ! docker compose -f infra/compose.yml up -d --wait site; then
-  export ALLANDEV_IMAGE="$previous"
-  docker compose -f infra/compose.yml up -d --wait site
+$compose pull site
+if ! $compose up -d --wait site; then
+  if [ -n "$previous" ]; then
+    export ALLANDEV_IMAGE="$previous"
+    $compose up -d --wait site
+  fi
   exit 1
 fi

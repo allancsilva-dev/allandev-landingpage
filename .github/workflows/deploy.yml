@@ -3,14 +3,34 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  packages: write
 concurrency:
   group: production
   cancel-in-progress: false
 jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SITE_URL: http://localhost:4000
+      APP_ENV: development
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with: { version: 11.6.0, run_install: false }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with: { node-version-file: .nvmrc, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: ./scripts/check-secrets.sh
+      - run: pnpm audit --prod --audit-level high
   image:
+    needs: verify
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      contents: read
+      packages: write
     outputs:
       image: ${{ steps.meta.outputs.image }}
     steps:
@@ -28,6 +48,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.image }}
+          build-args: |
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           provenance: mode=max
           sbom: true
   deploy:
@@ -50,4 +72,5 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           IMAGE: ${{ needs.image.outputs.image }}
-        run: ssh -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" "/usr/local/sbin/deploy-allandev '$IMAGE'"
+        # The server key has a forced command; only the image reference is sent.
+        run: ssh -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" "$IMAGE"

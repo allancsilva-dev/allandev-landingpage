@@ -9,3 +9,10 @@ test-results
 docs/muniz-dev-landing-page-main
 docs/*.png
 *.log
+.pnpm-store
+.cache
+.impeccable
+.DS_Store
+docs
+tests
+*.tsbuildinfo

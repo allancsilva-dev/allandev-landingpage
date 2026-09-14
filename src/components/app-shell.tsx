@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
+import { DotField } from "@/components/ui/dot-field";
 import {
   useCallback,
   useEffect,
@@ -170,6 +171,21 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <>
+      {/* Fixed behind the whole site: a negative z-index keeps it above the
+          body gradients and below every section. */}
+      <DotField
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: -1,
+          pointerEvents: "none",
+        }}
+        dotRadius={2.4}
+        dotSpacing={18}
+        gradientFrom="rgba(110, 165, 255, 0.6)"
+        gradientTo="rgba(185, 115, 255, 0.5)"
+        glowColor="rgba(70, 110, 255, 0.35)"
+      />
       <a className="skip-link" href="#main-content">
         Pular para o conteúdo
       </a>
